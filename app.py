@@ -71,7 +71,7 @@ EXPECTED_METRICS = [
     "Open ALL RRR Defects", "Open Security Defects", "All Open Defects (T-1)",
     "All Security Open Defects", "Load/Performance", "E2E Test Coverage",
     "Automation Test Coverage", "Unit Test Coverage", "Defect Closure Rate",
-    "Regression Issues"
+    "Regression Issues", "Customer Specific Testing (UAT)"
 ]
 CACHE_TTL_SECONDS = 3 * 24 * 60 * 60  # 3 days in seconds
 
@@ -113,9 +113,7 @@ shared_state = SharedState()
 def init_cache_db():
     conn = sqlite3.connect('cache.db')
     cursor = conn.cursor()
-    # Enable Write-Ahead Logging for better concurrency
     cursor.execute("PRAGMA journal_mode=WAL")
-    # Create table if it doesn't exist
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS report_cache (
             folder_path_hash TEXT PRIMARY KEY,
@@ -127,7 +125,6 @@ def init_cache_db():
     conn.commit()
     conn.close()
 
-# Initialize the database on startup
 init_cache_db()
 
 def hash_string(s: str) -> str:
@@ -138,7 +135,6 @@ def hash_pdf_contents(pdf_files: List[str]) -> str:
     for pdf_path in sorted(pdf_files):
         try:
             with open(pdf_path, 'rb') as f:
-                # Read in chunks to handle large files
                 for chunk in iter(lambda: f.read(4096), b""):
                     hasher.update(chunk)
         except Exception as e:
@@ -162,11 +158,9 @@ def get_cached_report(folder_path_hash: str, pdfs_hash: str) -> Union[AnalysisRe
             report_json, created_at = result
             current_time = int(time.time())
             if current_time - created_at < CACHE_TTL_SECONDS:
-                # Cache is still valid
                 report_dict = json.loads(report_json)
                 return AnalysisResponse(**report_dict)
             else:
-                # Cache expired, delete the entry
                 with shared_state.lock:
                     conn = sqlite3.connect('cache.db')
                     cursor = conn.cursor()
@@ -205,9 +199,10 @@ def cleanup_old_cache():
                 DELETE FROM report_cache
                 WHERE created_at < ?
             ''', (current_time - CACHE_TTL_SECONDS,))
+            deleted_rows = cursor.rowcount
             conn.commit()
             conn.close()
-        logger.info("Cleaned up old cache entries")
+        logger.info(f"Cleaned up old cache entries, deleted {deleted_rows} rows")
     except Exception as e:
         logger.error(f"Error cleaning up old cache entries: {str(e)}")
 
@@ -237,7 +232,6 @@ def extract_text_from_pdf(pdf_path: str) -> str:
                     text += extracted + '\n'
             if not text.strip():
                 raise ValueError(f"No text extracted from {pdf_path}")
-            # Normalize whitespace and line breaks
             text = re.sub(r'\s+', ' ', text).strip()
             return text
     except Exception as e:
@@ -277,7 +271,6 @@ def locate_table(text: str, start_header: str, end_header: str) -> str:
     if end_index == -1:
         raise ValueError(f'Header {end_header} not found in text')
     table_text = text[start_index:end_index].strip()
-    # Ensure table text is non-empty
     if not table_text:
         raise ValueError(f"No metrics table data found between headers")
     return table_text
@@ -347,7 +340,7 @@ def validate_metrics(metrics: Dict[str, Any]) -> bool:
                 logger.warning(f"Invalid ATLS/BTLS structure for {metric}: {data}")
                 return False
             for sub in ['ATLS', 'BTLS']:
-                if not isinstance(data[sub], list) or len(data[sub]) < 2:  # At least 2 versions
+                if not isinstance(data[sub], list) or len(data[sub]) < 2:
                     logger.warning(f"Empty or insufficient {sub} data for {metric}: {data[sub]}")
                     return False
                 has_non_zero = False
@@ -368,7 +361,7 @@ def validate_metrics(metrics: Dict[str, Any]) -> bool:
                         if item_dict['status'] not in ['ON TRACK', 'MEDIUM RISK', 'RISK', 'NEEDS REVIEW']:
                             logger.warning(f"Invalid status in {sub} item for {metric}: {item}")
                             return False
-                        if 'trend' in item_dict and not re.match(r'^(â†‘|â†“)\s*\(\d+\.\d+%\)|â†’$', item_dict['trend']):
+                        if 'trend' in item_dict and not re.match(r'^(↑|↓)\s*\(\d+\.\d+%\)|→$', item_dict['trend']):
                             logger.warning(f"Invalid trend in {sub} item for {metric}: {item}")
                             return False
                     except Exception as e:
@@ -377,6 +370,39 @@ def validate_metrics(metrics: Dict[str, Any]) -> bool:
                 if not has_non_zero:
                     logger.warning(f"No non-zero values in {sub} for {metric}")
                     return False
+        elif metric == "Customer Specific Testing (UAT)":
+            if not isinstance(data, dict) or not all(client in data for client in ['RBS', 'Tesco', 'Belk']):
+                logger.warning(f"Invalid structure for {metric}: {data}")
+                return False
+            for client in ['RBS', 'Tesco', 'Belk']:
+                client_data = data.get(client, [])
+                if not isinstance(client_data, list) or len(client_data) < 2:
+                    logger.warning(f"Empty or insufficient data for {metric} {client}: {client_data}")
+                    return False
+                for item in client_data:
+                    try:
+                        item_dict = dict(item)
+                        if not all(k in item_dict for k in ['version', 'pass_count', 'fail_count', 'status']):
+                            logger.warning(f"Missing keys in {client} item for {metric}: {item}")
+                            return False
+                        if not isinstance(item_dict['version'], str) or not re.match(r'^\d+\.\d+$', item_dict['version']):
+                            logger.warning(f"Invalid version in {client} item for {metric}: {item}")
+                            return False
+                        if not isinstance(item_dict['pass_count'], (int, float)) or item_dict['pass_count'] < 0:
+                            logger.warning(f"Invalid pass_count in {client} item for {metric}: {item}")
+                            return False
+                        if not isinstance(item_dict['fail_count'], (int, float)) or item_dict['fail_count'] < 0:
+                            logger.warning(f"Invalid fail_count in {client} item for {metric}: {item}")
+                            return False
+                        if item_dict['status'] not in ['ON TRACK', 'MEDIUM RISK', 'RISK', 'NEEDS REVIEW']:
+                            logger.warning(f"Invalid status in {client} item for {metric}: {item}")
+                            return False
+                        if 'trend' in item_dict and not re.match(r'^(↑|↓)\s*\(\d+\.\d+%\)|→$', item_dict['trend']):
+                            logger.warning(f"Invalid trend in {client} item for {metric}: {item}")
+                            return False
+                    except Exception as e:
+                        logger.warning(f"Invalid item in {client} for {metric}: {item}, error: {str(e)}")
+                        return False
         else:  # Non-ATLS/BTLS metrics
             if not isinstance(data, list) or len(data) < 2:
                 logger.warning(f"Empty or insufficient data for {metric}: {data}")
@@ -399,7 +425,7 @@ def validate_metrics(metrics: Dict[str, Any]) -> bool:
                     if item_dict['status'] not in ['ON TRACK', 'MEDIUM RISK', 'RISK', 'NEEDS REVIEW']:
                         logger.warning(f"Invalid status in item for {metric}: {item}")
                         return False
-                    if 'trend' in item_dict and not re.match(r'^(â†‘|â†“)\s*\(\d+\.\d+%\)|â†’$', item_dict['trend']):
+                    if 'trend' in item_dict and not re.match(r'^(↑|↓)\s*\(\d+\.\d+%\)|→$', item_dict['trend']):
                         logger.warning(f"Invalid trend in item for {metric}: {item}")
                         return False
                 except Exception as e:
@@ -419,45 +445,69 @@ def process_task_output(raw_output: str) -> Dict:
         raise ValueError("Invalid or incomplete metrics data")
     # Validate and correct trends
     for metric, metric_data in data['metrics'].items():
-        if metric == 'Customer Specific Testing (UAT)':
-            continue
         if metric in EXPECTED_METRICS[:5]:  # ATLS/BTLS metrics
             for sub in ['ATLS', 'BTLS']:
                 items = sorted(metric_data[sub], key=lambda x: x['version'])
                 for i in range(len(items)):
                     if i == 0 or not items[i].get('value') or not items[i-1].get('value'):
-                        items[i]['trend'] = 'â†’'
+                        items[i]['trend'] = '→'
                     else:
                         prev_val = float(items[i-1]['value'])
                         curr_val = float(items[i]['value'])
                         if prev_val == 0 or abs(curr_val - prev_val) < 0.01:
-                            items[i]['trend'] = 'â†’'
+                            items[i]['trend'] = '→'
                         else:
                             pct_change = ((curr_val - prev_val) / prev_val) * 100
                             if abs(pct_change) < 1:
-                                items[i]['trend'] = 'â†’'
+                                items[i]['trend'] = '→'
                             elif pct_change > 0:
-                                items[i]['trend'] = f"â†‘ ({abs(pct_change):.1f}%)"
+                                items[i]['trend'] = f"↑ ({abs(pct_change):.1f}%)"
                             else:
-                                items[i]['trend'] = f"â†“ ({abs(pct_change):.1f}%)"
+                                items[i]['trend'] = f"↓ ({abs(pct_change):.1f}%)"
+        elif metric == "Customer Specific Testing (UAT)":
+            for client in ['RBS', 'Tesco', 'Belk']:
+                items = sorted(metric_data[client], key=lambda x: x['version'])
+                for i in range(len(items)):
+                    pass_count = float(items[i].get('pass_count', 0))
+                    fail_count = float(items[i].get('fail_count', 0))
+                    total = pass_count + fail_count
+                    pass_rate = (pass_count / total * 100) if total > 0 else 0
+                    items[i]['pass_rate'] = pass_rate
+                    if i == 0:
+                        items[i]['trend'] = '→'
+                    else:
+                        prev_pass_count = float(items[i-1].get('pass_count', 0))
+                        prev_fail_count = float(items[i-1].get('fail_count', 0))
+                        prev_total = prev_pass_count + prev_fail_count
+                        prev_pass_rate = (prev_pass_count / prev_total * 100) if prev_total > 0 else 0
+                        if prev_total == 0 or total == 0 or abs(pass_rate - prev_pass_rate) < 0.01:
+                            items[i]['trend'] = '→'
+                        else:
+                            pct_change = pass_rate - prev_pass_rate
+                            if abs(pct_change) < 1:
+                                items[i]['trend'] = '→'
+                            elif pct_change > 0:
+                                items[i]['trend'] = f"↑ ({abs(pct_change):.1f}%)"
+                            else:
+                                items[i]['trend'] = f"↓ ({abs(pct_change):.1f}%)"
         else:  # Non-ATLS/BTLS metrics
             items = sorted(metric_data, key=lambda x: x['version'])
             for i in range(len(items)):
                 if i == 0 or not items[i].get('value') or not items[i-1].get('value'):
-                    items[i]['trend'] = 'â†’'
+                    items[i]['trend'] = '→'
                 else:
                     prev_val = float(items[i-1]['value'])
                     curr_val = float(items[i]['value'])
                     if prev_val == 0 or abs(curr_val - prev_val) < 0.01:
-                        items[i]['trend'] = 'â†’'
+                        items[i]['trend'] = '→'
                     else:
                         pct_change = ((curr_val - prev_val) / prev_val) * 100
                         if abs(pct_change) < 1:
-                            items[i]['trend'] = 'â†’'
+                            items[i]['trend'] = '→'
                         elif pct_change > 0:
-                            items[i]['trend'] = f"â†‘ ({abs(pct_change):.1f}%)"
+                            items[i]['trend'] = f"↑ ({abs(pct_change):.1f}%)"
                         else:
-                            items[i]['trend'] = f"â†“ ({abs(pct_change):.1f}%)"
+                            items[i]['trend'] = f"↓ ({abs(pct_change):.1f}%)"
     return data
 
 def setup_crew(extracted_text: str, llm=llm) -> tuple:
@@ -484,20 +534,26 @@ RULES:
         "All Open Defects (T-1)": {{"ATLS": [...], "BTLS": [...]}},
         "All Security Open Defects": {{"ATLS": [...], "BTLS": [...]}},
         "Load/Performance": {{"ATLS": [...], "BTLS": [...]}},
-        "E2E Test Coverage": [{{"version": "25.1", "value": N, "status": "TEXT"}}, ...]],
+        "E2E Test Coverage": [{{"version": "25.1", "value": N, "status": "TEXT"}}, ...],
         "Automation Test Coverage": [...],
         "Unit Test Coverage": [...],
         "Defect Closure Rate": [...],
-        "Regression Issues": [...]
+        "Regression Issues": [...],
+        "Customer Specific Testing (UAT)": {{
+            "RBS": [{{"version": "25.1", "pass_count": N, "fail_count": M, "status": "TEXT"}}, ...],
+            "Tesco": [...],
+            "Belk": [...]
+        }}
     }}
 }}
 3. Include ALL metrics: {', '.join(EXPECTED_METRICS)}
 4. Use versions "25.1", "25.2", "25.3"
-5. Values must be positive numbers (at least one non-zero per metric)
-6. Status must be one of: "ON TRACK", "MEDIUM RISK", "RISK", "NEEDS REVIEW"
-7. Ensure at least 2 items per metric/sub-metric
-8. No text outside JSON, no trailing commas, no comments
-9. Validate JSON syntax before output
+5. For UAT, pass_count and fail_count must be non-negative integers, at least one non-zero per client
+6. For other metrics, values must be positive numbers (at least one non-zero per metric)
+7. Status must be one of: "ON TRACK", "MEDIUM RISK", "RISK", "NEEDS REVIEW"
+8. Ensure at least 2 items per metric/sub-metric
+9. No text outside JSON, no trailing commas, no comments
+10. Validate JSON syntax before output
 EXAMPLE:
 {{
     "metrics": {{
@@ -509,11 +565,15 @@ EXAMPLE:
             ],
             "BTLS": [...]
         }},
-        "E2E Test Coverage": [
-            {{"version": "25.1", "value": 85.5, "status": "ON TRACK"}},
-            {{"version": "25.2", "value": 87.0, "status": "ON TRACK"}},
-            {{"version": "25.3", "value": 88.5, "status": "ON TRACK"}}
-        ],
+        "Customer Specific Testing (UAT)": {{
+            "RBS": [
+                {{"version": "25.1", "pass_count": 50, "fail_count": 5, "status": "ON TRACK"}},
+                {{"version": "25.2", "pass_count": 48, "fail_count": 6, "status": "MEDIUM RISK"}},
+                {{"version": "25.3", "pass_count": 52, "fail_count": 4, "status": "ON TRACK"}}
+            ],
+            "Tesco": [...],
+            "Belk": [...]
+        }},
         ...
     }}
 }}""",
@@ -538,21 +598,31 @@ EXAMPLE:
     analysis_task = Task(
         description=f"""Enhance metrics JSON with trends:
 1. Input is JSON from Data Structurer
-2. Add 'trend' field to each metric item except for Customer-Specific Testing (UAT)
+2. Add 'trend' field to each metric item
 3. Output MUST be valid JSON
-4. Calculate trends as follows:
+4. For metrics except Customer Specific Testing (UAT):
    - Sort items by version ("25.1", "25.2", "25.3")
    - For each item (except first per metric):
      - Compute % change: ((current_value - previous_value) / previous_value) * 100
-     - If previous_value is 0 or |change| < 0.01, set trend to "â†’"
-     - If |% change| < 1%, set trend to "â†’"
-     - If % change > 0, set trend to "â†‘ (X.X%)" (e.g., "â†‘ (5.2%)")
-     - If % change < 0, set trend to "â†“ (X.X%)"
-   - First item per metric gets "â†’"
-5. Ensure all metrics are included: {', '.join(EXPECTED_METRICS)}
-6. Use double quotes for all strings
-7. No trailing commas or comments
-8. Validate JSON syntax before output
+     - If previous_value is 0 or |change| < 0.01, set trend to "→"
+     - If |% change| < 1%, set trend to "→"
+     - If % change > 0, set trend to "↑ (X.X%)" (e.g., "↑ (5.2%)")
+     - If % change < 0, set trend to "↓ (X.X%)"
+   - First item per metric gets "→"
+5. For Customer Specific Testing (UAT):
+   - For each client (RBS, Tesco, Belk), compute pass rate: pass_count / (pass_count + fail_count) * 100
+   - Sort items by version ("25.1", "25.2", "25.3")
+   - For each item (except first per client):
+     - Compute % change in pass rate: (current_pass_rate - previous_pass_rate)
+     - If previous_total or current_total is 0 or |change| < 0.01, set trend to "→"
+     - If |% change| < 1%, set trend to "→"
+     - If % change > 0, set trend to "↑ (X.X%)"
+     - If % change < 0, set trend to "↓ (X.X%)"
+   - First item per client gets "→"
+6. Ensure all metrics are included: {', '.join(EXPECTED_METRICS)}
+7. Use double quotes for all strings
+8. No trailing commas or comments
+9. Validate JSON syntax before output
 EXAMPLE INPUT:
 {{
     "metrics": {{
@@ -564,6 +634,15 @@ EXAMPLE INPUT:
             ],
             "BTLS": [...]
         }},
+        "Customer Specific Testing (UAT)": {{
+            "RBS": [
+                {{"version": "25.1", "pass_count": 50, "fail_count": 5, "status": "ON TRACK"}},
+                {{"version": "25.2", "pass_count": 48, "fail_count": 6, "status": "MEDIUM RISK"}},
+                {{"version": "25.3", "pass_count": 52, "fail_count": 4, "status": "ON TRACK"}}
+            ],
+            "Tesco": [...],
+            "Belk": [...]
+        }},
         ...
     }}
 }}
@@ -572,11 +651,20 @@ EXAMPLE OUTPUT:
     "metrics": {{
         "Open ALL RRR Defects": {{
             "ATLS": [
-                {{"version": "25.1", "value": 10, "status": "RISK", "trend": "â†’"}},
-                {{"version": "25.2", "value": 8, "status": "MEDIUM RISK", "trend": "â†“ (20.0%)"}},
-                {{"version": "25.3", "value": 5, "status": "ON TRACK", "trend": "â†“ (37.5%)"}}
+                {{"version": "25.1", "value": 10, "status": "RISK", "trend": "→"}},
+                {{"version": "25.2", "value": 8, "status": "MEDIUM RISK", "trend": "↓ (20.0%)"}},
+                {{"version": "25.3", "value": 5, "status": "ON TRACK", "trend": "↓ (37.5%)"}}
             ],
             "BTLS": [...]
+        }},
+        "Customer Specific Testing (UAT)": {{
+            "RBS": [
+                {{"version": "25.1", "pass_count": 50, "fail_count": 5, "status": "ON TRACK", "pass_rate": 90.9, "trend": "→"}},
+                {{"version": "25.2", "pass_count": 48, "fail_count": 6, "status": "MEDIUM RISK", "pass_rate": 88.9, "trend": "↓ (2.0%)"}},
+                {{"version": "25.3", "pass_count": 52, "fail_count": 4, "status": "ON TRACK", "pass_rate": 92.9, "trend": "↑ (4.0%)"}}
+            ],
+            "Tesco": [...],
+            "Belk": [...]
         }},
         ...
     }}
@@ -681,10 +769,18 @@ Only output this section.""",
 ### Regression Issues  
 
 STRICT RULES:
-- Tables must match the exact format (column counts)
+- For Customer Specific Testing (UAT), generate tables for each client with the following columns: Release | Pass Count | Fail Count | Pass Rate (%) | Trend | Status
+- For other metrics, use existing table formats
 - Use only these statuses: ON TRACK, MEDIUM RISK, RISK, NEEDS REVIEW
-- Use only these trend formats: â†‘ (X%), â†“ (Y%), â†’
+- Use only these trend formats: ↑ (X%), ↓ (Y%), →
 - No missing releases or extra formatting
+EXAMPLE FOR UAT:
+#### RBS
+| Release | Pass Count | Fail Count | Pass Rate (%) | Trend      | Status       |
+|---------|------------|------------|---------------|------------|--------------|
+| 25.1    | 50         | 5          | 90.9          | →          | ON TRACK     |
+| 25.2    | 48         | 6          | 88.9          | ↓ (2.0%)   | MEDIUM RISK  |
+| 25.3    | 52         | 4          | 92.9          | ↑ (4.0%)   | ON TRACK     |
 Only output this section.""",
         agent=reporter,
         context=[analysis_task],
@@ -780,7 +876,6 @@ Do NOT alter content. Just combine with correct formatting.""",
         verbose=True
     )
 
-    # Validate task definitions
     for crew, name in [(data_crew, "data_crew"), (report_crew, "report_crew"), (viz_crew, "viz_crew")]:
         for i, task in enumerate(crew.tasks):
             if not isinstance(task, Task):
@@ -808,6 +903,23 @@ def clean_json_output(raw_output: str) -> dict:
                     {"version": "25.3", "value": 6 + i, "status": "ON TRACK"}
                 ]
             } if metric in EXPECTED_METRICS[:5] else
+            {
+                "RBS": [
+                    {"version": "25.1", "pass_count": 50, "fail_count": 5, "status": "ON TRACK"},
+                    {"version": "25.2", "pass_count": 48, "fail_count": 6, "status": "MEDIUM RISK"},
+                    {"version": "25.3", "pass_count": 52, "fail_count": 4, "status": "ON TRACK"}
+                ],
+                "Tesco": [
+                    {"version": "25.1", "pass_count": 45, "fail_count": 3, "status": "ON TRACK"},
+                    {"version": "25.2", "pass_count": 46, "fail_count": 2, "status": "ON TRACK"},
+                    {"version": "25.3", "pass_count": 47, "fail_count": 1, "status": "ON TRACK"}
+                ],
+                "Belk": [
+                    {"version": "25.1", "pass_count": 40, "fail_count": 7, "status": "MEDIUM RISK"},
+                    {"version": "25.2", "pass_count": 42, "fail_count": 5, "status": "ON TRACK"},
+                    {"version": "25.3", "pass_count": 43, "fail_count": 4, "status": "ON TRACK"}
+                ]
+            } if metric == "Customer Specific Testing (UAT)" else
             [
                 {"version": "25.1", "value": 80 + i * 5, "status": "ON TRACK"},
                 {"version": "25.2", "value": 85 + i * 5, "status": "ON TRACK"},
@@ -874,7 +986,7 @@ def enhance_report_markdown(md_text):
    
     cleaned = re.sub(r'^\s*-\s+(.+)', r'- \1', cleaned, flags=re.MULTILINE)
    
-    return cleaned
+    return cleaned.encode('utf-8').decode('utf-8')
 
 def convert_windows_path(path: str) -> str:
     path = path.replace('\\', '/')
@@ -1225,6 +1337,7 @@ async def run_full_analysis(request: FolderPathRequest) -> AnalysisResponse:
             with open(script_path, "w", encoding="utf-8") as f:
                 f.write(clean_script)
             logger.info(f"Visualization script written to {script_path}")
+            logger.debug(f"Visualization script content:\n{clean_script}")
             runpy.run_path(script_path, init_globals={'metrics': metrics})
             logger.info("Visualization script executed successfully")
     except Exception as e:
@@ -1273,10 +1386,8 @@ async def run_full_analysis(request: FolderPathRequest) -> AnalysisResponse:
 @app.post("/analyze", response_model=AnalysisResponse)
 async def analyze_pdfs(request: FolderPathRequest):
     try:
-        # Clean up old cache entries
         cleanup_old_cache()
 
-        # Compute hashes for caching
         folder_path = convert_windows_path(request.folder_path)
         folder_path = os.path.normpath(folder_path)
         folder_path_hash = hash_string(folder_path)
@@ -1284,17 +1395,14 @@ async def analyze_pdfs(request: FolderPathRequest):
         pdfs_hash = hash_pdf_contents(pdf_files)
         logger.info(f"Computed hashes - folder_path_hash: {folder_path_hash}, pdfs_hash: {pdfs_hash}")
 
-        # Check cache
         cached_response = get_cached_report(folder_path_hash, pdfs_hash)
         if cached_response:
             logger.info(f"Cache hit for folder_path_hash: {folder_path_hash}")
             return cached_response
 
-        # Cache miss - run full analysis
         logger.info(f"Cache miss for folder_path_hash: {folder_path_hash}, running full analysis")
         response = await run_full_analysis(request)
 
-        # Store in cache
         store_cached_report(folder_path_hash, pdfs_hash, response)
         return response
 
