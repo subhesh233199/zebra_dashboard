@@ -1002,18 +1002,44 @@ def clean_json_output(raw_output: str, fallback_versions: List[str]) -> dict:
     logger.error(f"Failed to parse JSON, using default structure with zero values for versions: {fallback_versions}")
     return default_json
 
+# def enhance_report_markdown(md_text):
+#     cleaned = re.sub(r'^```markdown\n|\n```$', '', md_text, flags=re.MULTILINE)
+   
+#     cleaned = re.sub(
+#         r'(\|.+\|)\n\s*(\|-+\|)',
+#         r'\1\n\2',
+#         cleaned
+#     )
+   
+#     cleaned = re.sub(r'^#\s+(.+)$', r'# \1\n', cleaned, flags=re.MULTILINE)
+#     cleaned = re.sub(r'^##\s+(.+)$', r'## \1\n', cleaned, flags=re.MULTILINE)
+   
+#     status_map = {
+#         "MEDIUM RISK": "**MEDIUM RISK**",
+#         "HIGH RISK": "**HIGH RISK**",
+#         "LOW RISK": "**LOW RISK**",
+#         "ON TRACK": "**ON TRACK**"
+#     }
+#     for k, v in status_map.items():
+#         cleaned = cleaned.replace(k, v)
+   
+#     cleaned = re.sub(r'^\s*-\s+(.+)', r'- \1', cleaned, flags=re.MULTILINE)
+   
+#     return cleaned.encode('utf-8').decode('utf-8')
+
 def enhance_report_markdown(md_text):
+    # Remove markdown code fences
     cleaned = re.sub(r'^```markdown\n|\n```$', '', md_text, flags=re.MULTILINE)
-   
-    cleaned = re.sub(
-        r'(\|.+\|)\n\s*(\|-+\|)',
-        r'\1\n\2',
-        cleaned
-    )
-   
-    cleaned = re.sub(r'^#\s+(.+)$', r'# \1\n', cleaned, flags=re.MULTILINE)
-    cleaned = re.sub(r'^##\s+(.+)$', r'## \1\n', cleaned, flags=re.MULTILINE)
-   
+    
+    # Fix table alignment (remove extra spaces, ensure proper pipes)
+    cleaned = re.sub(r'(\|.+\|)\n\s*(\|-+\|)', r'\1\n\2', cleaned)
+    
+    # Clean invalid trend symbols (e.g., '4', 't', '/')
+    cleaned = re.sub(r'\b[4t/]\b', '→', cleaned)  # Replace stray symbols with arrow
+    cleaned = re.sub(r'\s*\|\s*', ' | ', cleaned)  # Normalize spacing around pipes
+    cleaned = re.sub(r'\s{2,}', ' ', cleaned)  # Collapse multiple spaces
+    
+    # Enhance statuses
     status_map = {
         "MEDIUM RISK": "**MEDIUM RISK**",
         "HIGH RISK": "**HIGH RISK**",
@@ -1022,9 +1048,12 @@ def enhance_report_markdown(md_text):
     }
     for k, v in status_map.items():
         cleaned = cleaned.replace(k, v)
-   
+    
+    # Fix headers and list items
+    cleaned = re.sub(r'^#\s+(.+)$', r'# \1\n', cleaned, flags=re.MULTILINE)
+    cleaned = re.sub(r'^##\s+(.+)$', r'## \1\n', cleaned, flags=re.MULTILINE)
     cleaned = re.sub(r'^\s*-\s+(.+)', r'- \1', cleaned, flags=re.MULTILINE)
-   
+    
     return cleaned.encode('utf-8').decode('utf-8')
 
 def convert_windows_path(path: str) -> str:
