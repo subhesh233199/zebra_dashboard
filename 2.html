@@ -138,9 +138,15 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/marked@4.0.12/lib/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked@14.1.0/lib/marked.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
     <script>
+        // Check if marked is loaded
+        if (typeof marked === 'undefined') {
+            console.error('marked.js failed to load');
+            alert('Failed to load markdown parser. Please check your internet connection or try again later.');
+        }
+
         // Handle Analyze button click
         document.getElementById('analyze-btn').addEventListener('click', async () => {
             let folderPath = document.getElementById('folder-path').value.trim();
@@ -150,7 +156,7 @@
             }
 
             // Normalize path: replace multiple slashes with single backslash, trim spaces
-            folderPath = folderPath.replace(/\/+/g, '\\').replace(/\\+/g, '\\').trim();
+            folderPath = folderPath.replace(/[\/\\]+/g, '\\').trim();
             // Validate path: drive letter, colon, slash, allowed characters
             if (!/^[a-zA-Z]:[\\\/][a-zA-Z0-9\s._\\\/-]+$/.test(folderPath)) {
                 alert('Invalid folder path format. Use a valid Windows path (e.g., C:\\Users\\Name\\Folder).');
@@ -189,8 +195,12 @@
                 document.getElementById('hyperlinks').style.display = 'block';
 
                 // Render report (no version filtering)
-                document.getElementById('report-content').innerHTML = marked.parse(data.report || '');
-                console.log('Rendered report HTML:', document.getElementById('report-content').innerHTML);
+                if (typeof marked !== 'undefined') {
+                    document.getElementById('report-content').innerHTML = marked.parse(data.report || '');
+                    console.log('Rendered report HTML:', document.getElementById('report-content').innerHTML);
+                } else {
+                    throw new Error('Markdown parser not available');
+                }
 
                 // Render visualizations (placeholder)
                 if (data.visualizations && Array.isArray(data.visualizations)) {
