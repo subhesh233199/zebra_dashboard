@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RRR Analysis Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .input-section {
+            margin-bottom: 20px;
+        }
+        .input-section input {
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 70%;
+            margin-right: 10px;
+        }
+        .input-section button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .input-section button:hover {
+            background-color: #218838;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            font-size: 18px;
+            color: #555;
+        }
+        .report-section, .visualizations-section, .evaluation-section, .hyperlinks-section {
+            margin-top: 20px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .report-section h2, .visualizations-section h2, .evaluation-section h2, .hyperlinks-section h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        .report-actions {
+            margin-top: 10px;
+        }
+        .report-actions button {
+            margin-right: 10px;
+            padding: 8px 16px;
+            font-size: 14px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        #edit-report-btn {
+            background-color: #007bff;
+            color: #fff;
+        }
+        #edit-report-btn:hover {
+            background-color: #0056b3;
+        }
+        #save-report-btn, #cancel-edit-btn {
+            background-color: #6c757d;
+            color: #fff;
+        }
+        #save-report-btn:hover, #cancel-edit-btn:hover {
+            background-color: #5a6268;
+        }
+        #download-report-btn {
+            background-color: #17a2b8;
+            color: #fff;
+        }
+        #download-report-btn:hover {
+            background-color: #138496;
+        }
+        #visualizations-content canvas {
+            max-width: 100%;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>RRR Analysis Tool</h1>
+        
+        <div class="input-section">
+            <input type="text" id="folder-path" placeholder="Enter Folder Path">
+            <button id="analyze-btn">Analyze</button>
+        </div>
+
+        <div id="loading" class="loading">
+            <p>Loading...</p>
+            <p>Analyzing PDFs... This may take a few minutes.</p>
+        </div>
+
+        <div id="analysis-report" class="report-section">
+            <h2>Analysis Report</h2>
+            <div id="report-content"></div>
+            <div id="report-actions" class="report-actions">
+                <button id="edit-report-btn">Edit Report</button>
+                <button id="save-report-btn" style="display: none;">Save Changes</button>
+                <button id="cancel-edit-btn" style="display: none;">Cancel</button>
+                <button id="download-report-btn">Download as PDF</button>
+            </div>
+        </div>
+
+        <div id="visualizations" class="visualizations-section">
+            <h2>Visualizations</h2>
+            <div id="visualizations-content"></div>
+        </div>
+
+        <div id="evaluation" class="evaluation-section">
+            <h2>Evaluation</h2>
+            <div id="evaluation-content"></div>
+        </div>
+
+        <div id="hyperlinks" class="hyperlinks-section">
+            <h2>Hyperlinks</h2>
+            <div id="hyperlinks-content"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked@4.0.12/lib/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script>
+        // Handle Analyze button click
+        document.getElementById('analyze-btn').addEventListener('click', async () => {
+            const folderPath = document.getElementById('folder-path').value;
+            if (!folderPath) {
+                alert('Please enter a folder path');
+                return;
+            }
+
+            // Show loading state
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('analysis-report').style.display = 'none';
+            document.getElementById('visualizations').style.display = 'none';
+            document.getElementById('evaluation').style.display = 'none';
+            document.getElementById('hyperlinks').style.display = 'none';
+
+            try {
+                // Fetch analysis
+                const response = await fetch('http://127.0.0.1:8080/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ folder_path: folderPath })
+                });
+
+                if (!response.ok) throw new Error('Analysis failed');
+
+                const data = await response.json();
+
+                // Hide loading state
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('analysis-report').style.display = 'block';
+                document.getElementById('visualizations').style.display = 'block';
+                document.getElementById('evaluation').style.display = 'block';
+                document.getElementById('hyperlinks').style.display = 'block';
+
+                // Render report (no version filtering)
+                document.getElementById('report-content').innerHTML = marked.parse(data.report);
+
+                // Render visualizations (placeholder)
+                if (data.visualizations && Array.isArray(data.visualizations)) {
+                    const ctx = document.createElement('canvas');
+                    document.getElementById('visualizations-content').appendChild(ctx);
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: data.visualizations.map(v => v.version), // Includes all versions
+                            datasets: [{
+                                label: 'Sample Metric',
+                                data: data.visualizations.map(v => v.value),
+                                borderColor: '#007bff',
+                                fill: false
+                            }]
+                        },
+                        options: { responsive: true }
+                    });
+                }
+
+                // Render evaluation
+                document.getElementById('evaluation-content').innerHTML = data.evaluation || 'No evaluation provided';
+
+                // Render hyperlinks
+                const hyperlinksList = document.createElement('ul');
+                (data.hyperlinks || []).forEach(link => {
+                    const li = document.createElement('li');
+                    const a = document.createElement('a');
+                    a.href = link.url;
+                    a.textContent = link.text;
+                    li.appendChild(a);
+                    hyperlinksList.appendChild(li);
+                });
+                document.getElementById('hyperlinks-content').innerHTML = '';
+                document.getElementById('hyperlinks-content').appendChild(hyperlinksList);
+
+                // Enable report editing
+                let originalContent = data.report;
+                document.getElementById('edit-report-btn').addEventListener('click', () => {
+                    const textarea = document.createElement('textarea');
+                    textarea.value = originalContent;
+                    textarea.style.width = '100%';
+                    textarea.style.height = '400px';
+                    document.getElementById('report-content').innerHTML = '';
+                    document.getElementById('report-content').appendChild(textarea);
+                    document.getElementById('edit-report-btn').style.display = 'none';
+                    document.getElementById('save-report-btn').style.display = 'inline';
+                    document.getElementById('cancel-edit-btn').style.display = 'inline';
+                });
+
+                document.getElementById('cancel-edit-btn').addEventListener('click', () => {
+                    document.getElementById('report-content').innerHTML = marked.parse(originalContent);
+                    document.getElementById('edit-report-btn').style.display = 'inline';
+                    document.getElementById('save-report-btn').style.display = 'none';
+                    document.getElementById('cancel-edit-btn').style.display = 'none';
+                });
+
+                document.getElementById('save-report-btn').addEventListener('click', () => {
+                    const textarea = document.getElementById('report-content').querySelector('textarea');
+                    originalContent = textarea.value;
+                    document.getElementById('report-content').innerHTML = marked.parse(originalContent);
+                    document.getElementById('edit-report-btn').style.display = 'inline';
+                    document.getElementById('save-report-btn').style.display = 'none';
+                    document.getElementById('cancel-edit-btn').style.display = 'none';
+                });
+
+                // Download as PDF (placeholder)
+                document.getElementById('download-report-btn').addEventListener('click', () => {
+                    alert('PDF download not implemented in this example');
+                    // Implement PDF generation (e.g., using jsPDF) if needed
+                });
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to analyze PDFs');
+                document.getElementById('loading').style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
