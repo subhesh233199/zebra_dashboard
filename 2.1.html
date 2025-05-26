@@ -314,19 +314,19 @@
             min-width: 300px;
         }
 
-        .visualizations-content {
+        .visualizations {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
             place-items: center;
-            padding-bottom: 20px;
+            padding: 15px 0;
         }
 
-        .visualizations-content img {
-            max-width: 500px;
+        .visualizations img {
+            max-width: 300px;
+            max-height: 250px;
             width: 100%;
             height: auto;
-            max-height: 400px;
             object-fit: contain;
             border: 1px solid var(--border-color);
             border-radius: 5px;
@@ -334,13 +334,13 @@
             transition: transform 0.2s ease-in-out;
         }
 
-        .visualizations-content img:hover {
-            transform: scale(1.02);
+        .visualizations img:hover {
+            transform: scale(1.05);
         }
 
         @media (max-width: 992px) {
-            .visualizations-content {
-                grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            .visualizations {
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             }
         }
 
@@ -378,31 +378,31 @@
                 flex: 1 1 100%;
             }
 
-            .visualizations-content {
+            .visualizations {
                 grid-template-columns: 1fr;
             }
 
-            .visualizations-content img {
-                 max-height: 300px;
-                 max-width: 100%;
+            .visualizations img {
+                max-width: 100%;
+                max-height: 200px;
             }
         }
 
-        #hyperlinks-content div {
-            margin-bottom: 10px;
-            padding: 8px 12px;
+        .hyperlinks div {
+            margin-bottom: 8px;
+            padding: 8px;
             background-color: #f0f4f7;
             border-radius: 4px;
-            border: 1px solid #e0e6eb;
+            border: 1px solid var(--border-color);
         }
 
-        #hyperlinks-content a {
+        .hyperlinks a {
             color: var(--accent-color);
             text-decoration: none;
             font-weight: 500;
         }
 
-        #hyperlinks-content a:hover {
+        .hyperlinks a:hover {
             text-decoration: underline;
             color: #2980b9;
         }
@@ -455,7 +455,7 @@
 
         <div id="visualizations" class="section-card" style="display: none;">
             <h2>Visualizations</h2>
-            <div id="visualizations-content"></div>
+            <div class="visualizations" id="visualizations-content"></div>
         </div>
 
         <div id="evaluation" class="section-card" style="display: none;">
@@ -465,17 +465,17 @@
 
         <div id="hyperlinks" class="section-card" style="display: none;">
             <h2>Hyperlinks</h2>
-            <div id="hyperlinks-content"></div>
+            <div class="hyperlinks" id="hyperlinks-content"></div>
         </div>
     </div>
 
     <script>
         // Configure marked with options for better rendering
         marked.setOptions({
-            breaks: true, // Enable line breaks
-            gfm: true,   // Enable GitHub Flavored Markdown
-            tables: true, // Enable table support
-            sanitize: false // Disable HTML sanitization to allow custom styling
+            breaks: true,
+            gfm: true,
+            tables: true,
+            sanitize: false
         });
 
         document.getElementById('analyze-btn').addEventListener('click', async () => {
@@ -485,7 +485,6 @@
                 return;
             }
 
-            // Show loading state with spinner
             document.getElementById('loading').style.display = 'flex';
             document.getElementById('analysis-report').style.display = 'none';
             document.getElementById('visualizations').style.display = 'none';
@@ -494,7 +493,6 @@
             document.getElementById('analyze-btn').disabled = true;
             hideError();
 
-            // Clear previous content
             document.getElementById('report-content').innerHTML = '';
             document.getElementById('visualizations-content').innerHTML = '';
             document.getElementById('evaluation-content').innerHTML = '';
@@ -505,7 +503,6 @@
                     folder_path: folderPath
                 });
 
-                // Hide loading state
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('analyze-btn').disabled = false;
                 document.getElementById('analysis-report').style.display = 'block';
@@ -513,10 +510,8 @@
                 document.getElementById('evaluation').style.display = 'block';
                 document.getElementById('hyperlinks').style.display = 'block';
 
-                // Render report with proper Markdown parsing
                 try {
                     const reportContent = response.data.report || 'No report content provided.';
-                    // Ensure the content is a string and parse it as Markdown
                     const reportContentHtml = typeof reportContent === 'string' 
                         ? marked.parse(reportContent)
                         : 'Error: Report content is not in a valid format.';
@@ -527,7 +522,6 @@
                         response.data.report || 'Error rendering report content.';
                 }
 
-                // --- Special Handling for Tables in Report Content ---
                 const tables = document.querySelectorAll('#report-content table');
                 const metricsSummaryHeading = document.getElementById('report-content').querySelector('h2#metrics-summary');
                 
@@ -566,22 +560,18 @@
 
                     metricsSummaryHeading.parentNode.insertBefore(tableContainer, metricsSummaryHeading.nextSibling);
                 }
-                // --- End Special Handling for Tables ---
 
-                // Render visualizations
                 if (response.data.visualizations && response.data.visualizations.length > 0) {
                     const vizContent = response.data.visualizations.map((base64, index) =>
-                        `<img src="data:image/png;base64,${base64}" class="visualization img-fluid" alt="Data visualization ${index + 1}" loading="lazy">`
+                        `<img src="data:image/png;base64,${base64}" alt="Data visualization ${index + 1}" loading="lazy">`
                     ).join('');
                     document.getElementById('visualizations-content').innerHTML = vizContent;
                 } else {
                     document.getElementById('visualizations-content').innerHTML = 'No visualizations available.';
                 }
 
-                // Render evaluation
                 document.getElementById('evaluation-content').innerHTML = response.data.evaluation || 'No evaluation provided.';
 
-                // Render hyperlinks
                 if (response.data.hyperlinks && response.data.hyperlinks.length > 0) {
                     const hyperlinksList = response.data.hyperlinks.map(link => `
                         <div>
@@ -602,7 +592,6 @@
             }
         });
 
-        // Basic HTML escaping for hyperlink text
         function escapeHtml(unsafe) {
             return unsafe
                 .replace(/&/g, "&amp;")
@@ -612,7 +601,6 @@
                 .replace(/'/g, "&#039;");
         }
 
-        // Basic URL sanitization
         function sanitizeUrl(url) {
             try {
                 const u = new URL(url);
@@ -622,7 +610,6 @@
             }
         }
 
-        // Error handling functions
         function showError(message) {
             const errorEl = document.getElementById('error-message');
             errorEl.textContent = message;
@@ -633,7 +620,6 @@
             document.getElementById('error-message').style.display = 'none';
         }
 
-        // Edit report functionality
         const reportContentDiv = document.getElementById('report-content');
         const editBtn = document.getElementById('edit-report-btn');
         const saveBtn = document.getElementById('save-report-btn');
@@ -664,7 +650,6 @@
             cancelBtn.style.display = 'none';
         });
 
-        // Placeholder for Download as PDF functionality
         document.getElementById('download-report-btn').addEventListener('click', () => {
             alert('Download as PDF functionality would be implemented here with a library like jsPDF or html2pdf.js');
         });
