@@ -424,7 +424,7 @@ def validate_metrics(metrics: Dict[str, Any]) -> bool:
                 try:
                     item_dict = dict(item)
                     if not all(k in item_dict for k in ['version', 'value', 'status']):
-                        logger.WARNING(f"Missing keys in item for {metric}: {item}")
+                        logger.warning(f"Missing keys in item for {metric}: {item}")
                         return False
                     if not isinstance(item_dict['version'], str) or not re.match(r'^\d+\.\d+$', item_dict['version']):
                         logger.warning(f"Invalid version in item for {metric}: {item}")
@@ -440,7 +440,7 @@ def validate_metrics(metrics: Dict[str, Any]) -> bool:
                     if 'trend' in item_dict and not re.match(r'^(↑|↓)\s*\(\d+\.\d+%\)|→$', item_dict['trend']):
                         logger.warning(f"Invalid trend in item for {metric}: {item}")
                         return False
-                exceptijdensException as e:
+                except Exception as e:
                     logger.warning(f"Invalid item for {metric}: {item}, error: {str(e)}")
                     return False
             if not has_non_zero:
@@ -923,7 +923,7 @@ def clean_json_output(raw_output: str, versions: List[str]) -> dict:
 
     try:
         data = json.loads(raw_output)
-        if validate_metrics(data, is_fallback=False):
+        if validate_metrics(data):
             return data
         logger.warning(f"Direct JSON invalid: {json.dumps(data, indent=2)[:200]}...")
     except json.JSONDecodeError as e:
@@ -933,7 +933,7 @@ def clean_json_output(raw_output: str, versions: List[str]) -> dict:
         cleaned = re.search(r'```json\s*([\s\S]*?)\s*```', raw_output, re.MULTILINE)
         if cleaned:
             data = json.loads(cleaned.group(1))
-            if validate_metrics(data, is_fallback=False):
+            if validate_metrics(data):
                 return data
             logger.warning(f"Code block JSON invalid: {json.dumps(data, indent=2)[:200]}...")
     except json.JSONDecodeError as e:
@@ -946,7 +946,7 @@ def clean_json_output(raw_output: str, versions: List[str]) -> dict:
             json_str = re.sub(r"'", '"', json_str)
             json_str = re.sub(r',\s*([\]}])', r'\1', json_str)
             data = json.loads(json_str)
-            if validate_metrics(data, is_fallback=False):
+            if validate_metrics(data):
                 return data
             logger.warning(f"JSON-like structure invalid: {json.dumps(data, indent=2)[:200]}...")
     except json.JSONDecodeError as e:
@@ -954,6 +954,7 @@ def clean_json_output(raw_output: str, versions: List[str]) -> dict:
 
     logger.error(f"Failed to parse JSON, using default structure with zero values for versions: {fallback_versions}")
     return default_json
+
 def enhance_report_markdown(md_text):
     cleaned = re.sub(r'^```markdown\n|\n```$', '', md_text, flags=re.MULTILINE)
     
