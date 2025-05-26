@@ -413,7 +413,7 @@
             }
 
             // Show loading state with spinner
-            document.getElementById('loading').style.display = 'flex'; // Use flex to center spinner
+            document.getElementById('loading').style.display = 'flex'; // Change from 'block' to 'flex'
             document.getElementById('analysis-report').style.display = 'none';
             document.getElementById('visualizations').style.display = 'none';
             document.getElementById('evaluation').style.display = 'none';
@@ -448,7 +448,9 @@
                 // Find all tables within the report content
                 const tables = document.querySelectorAll('#report-content table');
                 if (tables.length > 0) {
-                    // Assuming you have a heading with id="metrics-summary" in your markdown
+                    // Assuming you have a heading with id="metrics-summary" in your markdown.
+                    // Your markdown output for this heading should be: ## <a id="metrics-summary">Metrics Summary</a>
+                    // or just include the ID in the H2 tag if your markdown parser allows it: <h2 id="metrics-summary">Metrics Summary</h2>
                     const metricsSummaryHeading = document.getElementById('report-content').querySelector('h2#metrics-summary');
                     if (metricsSummaryHeading) {
                         const tableContainer = document.createElement('div');
@@ -459,8 +461,14 @@
 
                         let tableCountInGroup = 0;
 
-                        tables.forEach(table => {
-                            if (table.closest('#report-content')) { // Ensure it's a table inside report-content
+                        // Create a temporary array of tables to process, as NodeList is live
+                        const tablesToProcess = Array.from(tables);
+
+                        tablesToProcess.forEach(table => {
+                            // Only process tables that are direct descendants of report-content
+                            // or are within content that needs to be grouped.
+                            // The current logic works by removing them from their original place.
+                            if (table.closest('#report-content')) {
                                 const tableWrapper = document.createElement('div');
                                 tableWrapper.className = 'table-wrapper';
                                 tableWrapper.appendChild(table.cloneNode(true)); // Clone to move, not remove
@@ -532,6 +540,9 @@
         });
 
         saveBtn.addEventListener('click', () => {
+            // marked.parse expects markdown, but contentEditable returns HTML.
+            // For saving, you might want to convert HTML back to markdown or save as HTML directly.
+            // For this example, we'll just set contentEditable to false and rely on the browser's rendering.
             reportContentDiv.contentEditable = false;
             editBtn.style.display = 'inline-block';
             saveBtn.style.display = 'none';
@@ -550,6 +561,8 @@
         // Placeholder for Download as PDF functionality
         document.getElementById('download-report-btn').addEventListener('click', () => {
             alert('Download as PDF functionality not yet implemented.');
+            // You would typically use a library like jsPDF or html2pdf.js here
+            // to convert the report content to a PDF.
         });
     </script>
 </body>
