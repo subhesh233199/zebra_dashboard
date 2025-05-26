@@ -6,7 +6,7 @@
     <title>Professional RRR Analysis Tool</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Consolas:wght@400&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked@4.0.0/lib/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios@1.4.0/dist/axios.min.js"></script>
     <style>
@@ -470,6 +470,14 @@
     </div>
 
     <script>
+        // Configure marked with options for better rendering
+        marked.setOptions({
+            breaks: true, // Enable line breaks
+            gfm: true,   // Enable GitHub Flavored Markdown
+            tables: true, // Enable table support
+            sanitize: false // Disable HTML sanitization to allow custom styling
+        });
+
         document.getElementById('analyze-btn').addEventListener('click', async () => {
             let folderPath = document.getElementById('folder-path').value.trim();
             if (!folderPath) {
@@ -505,13 +513,18 @@
                 document.getElementById('evaluation').style.display = 'block';
                 document.getElementById('hyperlinks').style.display = 'block';
 
-                // Render report
+                // Render report with proper Markdown parsing
                 try {
-                    const reportContentHtml = marked.parse(response.data.report || 'No report content provided.');
+                    const reportContent = response.data.report || 'No report content provided.';
+                    // Ensure the content is a string and parse it as Markdown
+                    const reportContentHtml = typeof reportContent === 'string' 
+                        ? marked.parse(reportContent)
+                        : 'Error: Report content is not in a valid format.';
                     document.getElementById('report-content').innerHTML = reportContentHtml;
                 } catch (e) {
                     console.error('Markdown parsing error:', e);
-                    document.getElementById('report-content').innerHTML = response.data.report || 'No report content provided.';
+                    document.getElementById('report-content').innerHTML = 
+                        response.data.report || 'Error rendering report content.';
                 }
 
                 // --- Special Handling for Tables in Report Content ---
