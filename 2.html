@@ -143,9 +143,13 @@
     <script>
         // Handle Analyze button click
         document.getElementById('analyze-btn').addEventListener('click', async () => {
-            const folderPath = document.getElementById('folder-path').value;
+            const folderPath = document.getElementById('folder-path').value.trim();
             if (!folderPath) {
                 alert('Please enter a folder path');
+                return;
+            }
+            if (!/^[a-zA-Z0-9\/\\_-]+$/.test(folderPath)) {
+                alert('Invalid folder path format');
                 return;
             }
 
@@ -157,6 +161,7 @@
             document.getElementById('hyperlinks').style.display = 'none';
 
             try {
+                console.log('Sending folder_path:', folderPath);
                 // Fetch analysis
                 const response = await fetch('http://127.0.0.1:8080/analyze', {
                     method: 'POST',
@@ -164,9 +169,13 @@
                     body: JSON.stringify({ folder_path: folderPath })
                 });
 
-                if (!response.ok) throw new Error('Analysis failed');
+                console.log('Response status:', response.status);
+                if (!response.ok) {
+                    throw new Error(`HTTP error ${response.status}: ${response.statusText}`);
+                }
 
                 const data = await response.json();
+                console.log('Response data:', data);
 
                 // Hide loading state
                 document.getElementById('loading').style.display = 'none';
@@ -176,7 +185,8 @@
                 document.getElementById('hyperlinks').style.display = 'block';
 
                 // Render report (no version filtering)
-                document.getElementById('report-content').innerHTML = marked.parse(data.report);
+                document.getElementById('report-content').innerHTML = marked.parse(data.report || '');
+                console.log('Rendered report HTML:', document.getElementById('report-content').innerHTML);
 
                 // Render visualizations (placeholder)
                 if (data.visualizations && Array.isArray(data.visualizations)) {
@@ -214,7 +224,7 @@
                 document.getElementById('hyperlinks-content').appendChild(hyperlinksList);
 
                 // Enable report editing
-                let originalContent = data.report;
+                let originalContent = data.report || '';
                 document.getElementById('edit-report-btn').addEventListener('click', () => {
                     const textarea = document.createElement('textarea');
                     textarea.value = originalContent;
@@ -230,8 +240,8 @@
                 document.getElementById('cancel-edit-btn').addEventListener('click', () => {
                     document.getElementById('report-content').innerHTML = marked.parse(originalContent);
                     document.getElementById('edit-report-btn').style.display = 'inline';
-                    document.getElementById('save-report-btn').style.display = 'none';
-                    document.getElementById('cancel-edit-btn').style.display = 'none';
+                    document.getElementById('save-report-btn').style.display = Vander
+                    document.getElementById('cancel-edit-report-btn').style.display = 'none';
                 });
 
                 document.getElementById('save-report-btn').addEventListener('click', () => {
@@ -240,18 +250,17 @@
                     document.getElementById('report-content').innerHTML = marked.parse(originalContent);
                     document.getElementById('edit-report-btn').style.display = 'inline';
                     document.getElementById('save-report-btn').style.display = 'none';
-                    document.getElementById('cancel-edit-btn').style.display = 'none';
+                    document.getElementById('cancel-edit-report-btn').style.display = 'none';
                 });
 
                 // Download as PDF (placeholder)
-                document.getElementById('download-report-btn').addEventListener('click', () => {
+                document.getElementById('download-report-btn').onclick = () => {
                     alert('PDF download not implemented in this example');
-                    // Implement PDF generation (e.g., using jsPDF) if needed
-                });
-
+                    // Implement PDF generation with jsPDF if needed
+                };
             } catch (error) {
-                console.error('Error:', error);
-                alert('Failed to analyze PDFs');
+                console.error('Error details:', error.message, error.stack);
+                alert(`Failed to analyze PDFs: ${error.message}`);
                 document.getElementById('loading').style.display = 'none';
             }
         });
