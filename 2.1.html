@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Professional RRR Analysis Tool</title>
-    <link href="[https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css](https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css)" rel="stylesheet">
-    <link href="[https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Consolas:wght@400&display=swap](https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Consolas:wght@400&display=swap)" rel="stylesheet">
-    <script src="[https://cdn.jsdelivr.net/npm/marked/marked.min.js](https://cdn.jsdelivr.net/npm/marked/marked.min.js)"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Consolas:wght@400&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         :root {
             --primary-color: #2c3e50; /* Darker blue for primary actions/branding */
@@ -444,7 +444,7 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/axios@1.4.0/dist/axios.min.js"></script>
+    <script src="[https://cdn.jsdelivr.net/npm/axios@1.4.0/dist/axios.min.js](https://cdn.jsdelivr.net/npm/axios@1.4.0/dist/axios.min.js)"></script>
     <script>
         document.getElementById('analyze-btn').addEventListener('click', async () => {
             let folderPath = document.getElementById('folder-path').value.trim();
@@ -454,12 +454,12 @@
             }
 
             // Show loading state with spinner
-            document.getElementById('loading').style.display = 'flex'; // Change from 'block' to 'flex'
+            document.getElementById('loading').style.display = 'flex';
             document.getElementById('analysis-report').style.display = 'none';
             document.getElementById('visualizations').style.display = 'none';
             document.getElementById('evaluation').style.display = 'none';
             document.getElementById('hyperlinks').style.display = 'none';
-            document.getElementById('analyze-btn').disabled = true; // Disable button during analysis
+            document.getElementById('analyze-btn').disabled = true;
 
 
             // Clear previous content
@@ -469,13 +469,13 @@
             document.getElementById('hyperlinks-content').innerHTML = '';
 
             try {
-                const response = await axios.post('http://127.0.0.1:8080/analyze', {
+                const response = await axios.post('[http://127.0.0.1:8080/analyze](http://127.0.0.1:8080/analyze)', {
                     folder_path: folderPath
                 });
 
                 // Hide loading state
                 document.getElementById('loading').style.display = 'none';
-                document.getElementById('analyze-btn').disabled = false; // Re-enable button
+                document.getElementById('analyze-btn').disabled = false;
                 document.getElementById('analysis-report').style.display = 'block';
                 document.getElementById('visualizations').style.display = 'block';
                 document.getElementById('evaluation').style.display = 'block';
@@ -561,7 +561,7 @@
         let originalContent = '';
 
         editBtn.addEventListener('click', () => {
-            originalContent = reportContentDiv.innerHTML;
+            originalContent = reportContentDiv.innerHTML; // Store current rendered HTML
             reportContentDiv.contentEditable = true;
             reportContentDiv.focus();
             editBtn.style.display = 'none';
@@ -570,14 +570,18 @@
         });
 
         saveBtn.addEventListener('click', () => {
+            // When saving, if the user was editing HTML, you just turn off contentEditable.
+            // If you want them to type markdown and then convert it, you'd need a markdown editor.
+            // For now, assume direct HTML editing when contentEditable is true.
             reportContentDiv.contentEditable = false;
             editBtn.style.display = 'inline-block';
             saveBtn.style.display = 'none';
             cancelBtn.style.display = 'none';
+            // If you need to send this back to a server, you'd send reportContentDiv.innerHTML
         });
 
         cancelBtn.addEventListener('click', () => {
-            reportContentDiv.innerHTML = originalContent;
+            reportContentDiv.innerHTML = originalContent; // Revert to the stored HTML
             reportContentDiv.contentEditable = false;
             editBtn.style.display = 'inline-block';
             saveBtn.style.display = 'none';
@@ -587,6 +591,8 @@
         // Placeholder for Download as PDF functionality
         document.getElementById('download-report-btn').addEventListener('click', () => {
             alert('Download as PDF functionality not yet implemented.');
+            // You would typically use a library like jsPDF or html2pdf.js here
+            // to convert the report content to a PDF.
         });
     </script>
 </body>
