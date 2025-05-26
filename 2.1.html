@@ -4,421 +4,216 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RRR Analysis Tool</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <!-- Bootstrap 5 CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Font Awesome for icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
     <style>
         body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f4f4f4;
-            line-height: 1.6;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        h1 {
-            color: #333;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .card {
-            margin-bottom: 20px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-shadow: 0 0 5px rgba(0,0,0,0.05);
-        }
-        .card-header {
             background-color: #f8f9fa;
-            border-bottom: 1px solid #ddd;
-            padding: 15px 20px;
-            font-weight: bold;
-            color: #333;
         }
-        .card-body {
-            padding: 20px;
+        .container-box {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 30px;
+            margin-top: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
         }
-        .input-group {
-            margin-bottom: 15px;
+        .section-title {
+            border-bottom: 2px solid #dee2e6;
+            padding-bottom: 8px;
+            margin-bottom: 20px;
+            color: #343a40;
         }
-        .input-group input {
-            padding: 10px;
-            font-size: 16px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            width: 70%;
-            margin-right: 10px;
-        }
-        .btn-primary {
-            background-color: #28a745;
-            border: none;
-            padding: 10px 20px;
-            font-size: 16px;
-        }
-        .btn-primary:hover {
-            background-color: #218838;
-        }
-        .btn-secondary {
-            background-color: #007bff;
-        }
-        .btn-secondary:hover {
-            background-color: #0056b3;
-        }
-        .btn-success {
-            background-color: #6c757d;
-        }
-        .btn-success:hover {
-            background-color: #5a6268;
-        }
-        .btn-danger {
-            background-color: #6c757d;
-        }
-        .btn-danger:hover {
-            background-color: #5a6268;
-        }
-        .loading {
-            text-align: center;
-            padding: 20px;
-            font-size: 18px;
-            color: #555;
-        }
-        .edit-controls {
-            margin-bottom: 15px;
-        }
-        .edit-controls button {
-            margin-right: 10px;
-            padding: 8px 16px;
-            font-size: 14px;
-        }
-        #download-report-btn {
-            background-color: #17a2b8;
-        }
-        #download-report-btn:hover {
-            background-color: #138496;
-        }
-        .visualization {
-            max-width: 100%;
-            margin: 15px 0;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-        .markdown-container h1 {
-            color: #333;
-            font-size: 2em;
-            border-bottom: 2px solid #666;
-            padding-bottom: 0.3em;
-        }
-        .markdown-container h2 {
-            color: #444;
-            font-size: 1.5em;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 0.3em;
-        }
-        .markdown-container table {
-            border-collapse: collapse;
+        #report-content textarea {
             width: 100%;
-            margin: 1em 0;
+            height: 400px;
+            font-family: monospace;
         }
-        .markdown-container table th {
-            background-color: #f8f9fa;
-            color: #333;
-            padding: 0.75em;
-            border: 1px solid #ddd;
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
         }
-        .markdown-container table td {
-            padding: 0.75em;
-            border: 1px solid #ddd;
-        }
-        .status-high { background-color: rgba(220, 53, 69, 0.1); color: #dc3545; }
-        .status-medium { background-color: rgba(255, 193, 7, 0.1); color: #ffc107; }
-        .status-low { background-color: rgba(40, 167, 69, 0.1); color: #28a745; }
-        .trend-up { color: #28a745; }
-        .trend-down { color: #dc3545; }
-        .trend-neutral { color: #6c757d; }
-        [contenteditable="true"] {
-            border: 1px dashed #007bff;
-            padding: 10px;
-            min-height: 100px;
-            background-color: rgba(0, 123, 255, 0.05);
+        a {
+            word-break: break-all;
         }
     </style>
 </head>
 <body>
+
     <div class="container">
-        <h1>RRR Analysis Tool</h1>
-        
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">Enter Folder Path</h5>
-            </div>
-            <div class="card-body">
-                <div class="input-group">
-                    <input type="text" id="folderPath" class="form-control" placeholder="Enter folder path (e.g., C:\Users\YourName\Desktop\YourFolder)">
-                    <button id="analyzeBtn" class="btn btn-primary">Analyze</button>
-                </div>
-            </div>
-        </div>
+        <div class="container-box">
+            <h1 class="mb-4 text-center"><i class="fas fa-chart-line me-2"></i>RRR Analysis Tool</h1>
 
-        <div id="loadingMessage" class="loading" style="display: none;">
-            <p>Analyzing PDFs... This may take a few minutes.</p>
-        </div>
+            <div class="input-group mb-4">
+                <input type="text" id="folder-path" class="form-control" placeholder="Enter folder path (e.g., C:\Users\Name\Folder)">
+                <button class="btn btn-success" id="analyze-btn"><i class="fas fa-search me-1"></i>Analyze</button>
+            </div>
 
-        <div id="results">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">Analysis Report</h5>
-                </div>
-                <div class="card-body">
-                    <div class="edit-controls">
-                        <button id="editReportBtn" class="btn btn-secondary btn-sm">Edit Report</button>
-                        <button id="saveReportBtn" class="btn btn-success btn-sm" style="display: none;">Save Changes</button>
-                        <button id="cancelEditBtn" class="btn btn-danger btn-sm" style="display: none;">Cancel</button>
-                        <button id="downloadReportBtn" class="btn btn-sm" style="background-color: #17a2b8; color: white;">Download as PDF</button>
-                    </div>
-                    <div id="reportContent" class="markdown-container" contenteditable="false"></div>
+            <div id="loading" class="text-center my-5 d-none">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p class="mt-3">Analyzing PDFs... This may take a few minutes.</p>
+            </div>
+
+            <div id="analysis-report" class="d-none">
+                <h3 class="section-title">Analysis Report</h3>
+                <div id="report-content" class="mb-3"></div>
+                <div class="d-flex flex-wrap gap-2">
+                    <button class="btn btn-primary" id="edit-report-btn"><i class="fas fa-edit me-1"></i>Edit Report</button>
+                    <button class="btn btn-secondary d-none" id="save-report-btn"><i class="fas fa-save me-1"></i>Save Changes</button>
+                    <button class="btn btn-outline-secondary d-none" id="cancel-edit-btn"><i class="fas fa-times me-1"></i>Cancel</button>
+                    <button class="btn btn-info" id="download-report-btn"><i class="fas fa-file-download me-1"></i>Download PDF</button>
                 </div>
             </div>
 
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">Visualizations</h5>
-                </div>
-                <div class="card-body">
-                    <div id="visualizationsContent" class="row"></div>
-                </div>
+            <div id="visualizations" class="d-none mt-5">
+                <h3 class="section-title">Visualizations</h3>
+                <div id="visualizations-content"></div>
             </div>
 
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">Evaluation</h5>
-                </div>
-                <div class="card-body">
-                    <div id="evaluationContent"></div>
-                </div>
+            <div id="evaluation" class="d-none mt-5">
+                <h3 class="section-title">Evaluation</h3>
+                <div id="evaluation-content"></div>
             </div>
 
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">Hyperlinks</h5>
-                </div>
-                <div class="card-body">
-                    <div id="hyperlinksContent"></div>
-                </div>
+            <div id="hyperlinks" class="d-none mt-5">
+                <h3 class="section-title">Hyperlinks</h3>
+                <div id="hyperlinks-content"></div>
             </div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/axios@1.4.0/dist/axios.min.js"></script>
+    <!-- JS Dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked@14.1.0/lib/marked.umd.min.js"></script>
+
     <script>
-        // All original JavaScript from index (2).html remains unchanged
-        function processMarkdownContent(content) {
-            if (typeof content !== 'string') {
-                console.error('processMarkdownContent: Input is not a string:', content);
-                return '<p>Error: Invalid report content</p>';
-            }
-            let cleaned = content.replace(/```markdown/g, '').replace(/```/g, '');
-            let html = marked.parse(cleaned);
-            html = html.replace(/<strong>HIGH RISK<\/strong>/g, '<span class="status-high">HIGH RISK</span>');
-            html = html.replace(/<strong>MEDIUM RISK<\/strong>/g, '<span class="status-medium">MEDIUM RISK</span>');
-            html = html.replace(/<strong>LOW RISK<\/strong>/g, '<span class="status-low">LOW RISK</span>');
-            html = html.replace(/<strong>ON TRACK<\/strong>/g, '<span class="status-low">ON TRACK</span>');
-            html = html.replace(/<strong>(↑ \([^<]+\))<\/strong>/g, '<span class="trend-up">$1</span>');
-            html = html.replace(/<strong>(↓ \([^<]+\))<\/strong>/g, '<span class="trend-down">$1</span>');
-            html = html.replace(/<strong>→<\/strong>/g, '<span class="trend-neutral">→</span>');
-            html = html.replace(/<table>/g, '<div class="table-responsive"><table class="table table-bordered">');
-            html = html.replace(/<\/table>/g, '</table></div>');
-            return html;
-        }
-
-        function htmlToMarkdown(htmlContent) {
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(`<div>${htmlContent}</div>`, 'text/html');
-            const root = doc.body.firstChild;
-            let markdown = '';
-            
-            function processNode(node) {
-                if (node.nodeType === Node.TEXT_NODE) {
-                    return node.textContent.trim();
-                }
-                if (node.nodeType !== Node.ELEMENT_NODE) return '';
-
-                let result = '';
-                const tagName = node.tagName.toLowerCase();
-                const childrenMarkdown = Array.from(node.childNodes).map(processNode).filter(Boolean).join('\n');
-
-                if (tagName === 'h1') {
-                    result = `# ${childrenMarkdown}\n`;
-                } else if (tagName === 'h2') {
-                    result = `## ${childrenMarkdown}\n`;
-                } else if (tagName === 'h3') {
-                    result = `### ${childrenMarkdown}\n`;
-                } else if (tagName === 'p') {
-                    result = `${childrenMarkdown}\n`;
-                } else if (tagName === 'table') {
-                    const rows = Array.from(node.querySelectorAll('tr'));
-                    if (rows.length === 0) return '';
-                    const headers = Array.from(rows[0].querySelectorAll('th, td')).map(cell => cell.textContent.trim());
-                    const separator = headers.map(() => '---');
-                    const bodyRows = rows.slice(1).map(row => 
-                        Array.from(row.querySelectorAll('td')).map(cell => cell.textContent.trim()).join(' | ')
-                    );
-                    result = `| ${headers.join(' | ')} |\n| ${separator.join(' | ')} |\n${bodyRows.map(row => `| ${row} |`).join('\n')}\n`;
-                } else if (tagName === 'span') {
-                    const className = node.className;
-                    if (className.includes('status-') || className.includes('trend-')) {
-                        result = `**${childrenMarkdown}**`;
-                    } else {
-                        result = childrenMarkdown;
-                    }
-                } else if (tagName === 'div' && node.className.includes('table-responsive')) {
-                    result = processNode(node.querySelector('table') || node);
-                } else {
-                    result = childrenMarkdown;
-                }
-
-                return result;
-            }
-
-            markdown = processNode(root).trim();
-            return markdown;
-        }
-
-        function validateMarkdownContent(content) {
-            const requiredSections = [
-                'Software Metrics Report',
-                'Overview',
-                'Metrics Summary',
-                'Key Findings',
-                'Recommendations'
-            ];
-            const missingSections = requiredSections.filter(section => !content.includes(section));
-            return { isValid: missingSections.length === 0, missingSections };
-        }
-
-        document.getElementById('analyzeBtn').addEventListener('click', async () => {
-            const folderPath = document.getElementById('folderPath').value;
+        document.getElementById('analyze-btn').addEventListener('click', async () => {
+            let folderPath = document.getElementById('folder-path').value.trim();
             if (!folderPath) {
                 alert('Please enter a folder path');
                 return;
             }
 
-            document.getElementById('loadingMessage').style.display = 'block';
-            document.getElementById('analyzeBtn').disabled = true;
-
-            try {
-                const response = await axios.post('http://127.0.0.1:8080/analyze', {
-                    folder_path: folderPath
-                });
-
-                document.getElementById('loadingMessage').style.display = 'none';
-                document.getElementById('analyzeBtn').disabled = false;
-
-                let savedContent = localStorage.getItem('savedReportContent');
-                let reportContent = '';
-                if (savedContent) {
-                    const validation = validateMarkdownContent(savedContent);
-                    if (validation.isValid) {
-                        reportContent = processMarkdownContent(savedContent);
-                    } else {
-                        console.warn('Saved content invalid, using server response');
-                        savedContent = response.data.report;
-                        localStorage.setItem('savedReportContent', savedContent);
-                        reportContent = processMarkdownContent(savedContent);
-                    }
-                } else {
-                    savedContent = response.data.report;
-                    localStorage.setItem('savedReportContent', savedContent);
-                    reportContent = processMarkdownContent(savedContent);
-                }
-                document.getElementById('reportContent').innerHTML = reportContent;
-
-                const vizContent = response.data.visualizations.map((base64, index) => 
-                    `<div class="col-md-6 mb-4">
-                        <img src="data:image/png;base64,${base64}" class="visualization" alt="Visualization ${index + 1}">
-                    </div>`
-                ).join('');
-                document.getElementById('visualizationsContent').innerHTML = vizContent;
-
-                const evalContent = `
-                    <div class="evaluation-card">
-                        <h4>Analysis Quality Score</h4>
-                        <div class="score-display">${response.data.evaluation.score}/100</div>
-                        <p>${response.data.evaluation.text}</p>
-                    </div>
-                `;
-                document.getElementById('evaluationContent').innerHTML = evalContent;
-
-                const hyperlinksContent = response.data.hyperlinks.map(link => `
-                    <div class="hyperlink-card">
-                        <h6><a href="${link.url}" target="_blank" class="hyperlink-url">${link.url}</a></h6>
-                        <p class="hyperlink-context">${link.context || 'No context available'}</p>
-                        <div class="hyperlink-source">
-                            Source: ${link.source_file} (Page ${link.page})
-                        </div>
-                    </div>
-                `).join('');
-                document.getElementById('hyperlinksContent').innerHTML = hyperlinksContent;
-
-            } catch (error) {
-                console.error('Error:', error);
-                alert('Error: ' + (error.response?.data?.detail || error.message));
-                document.getElementById('loadingMessage').style.display = 'none';
-                document.getElementById('analyzeBtn').disabled = false;
-            }
-        });
-
-        const reportContentDiv = document.getElementById('reportContent');
-        const editBtn = document.getElementById('editReportBtn');
-        const saveBtn = document.getElementById('saveReportBtn');
-        const cancelBtn = document.getElementById('cancelEditBtn');
-        let originalContent = '';
-        let originalMarkdown = '';
-
-        editBtn.addEventListener('click', () => {
-            originalContent = reportContentDiv.innerHTML;
-            originalMarkdown = localStorage.getItem('savedReportContent') || '';
-            reportContentDiv.contentEditable = true;
-            reportContentDiv.focus();
-            editBtn.style.display = 'none';
-            saveBtn.style.display = 'inline-block';
-            cancelBtn.style.display = 'inline-block';
-        });
-
-        saveBtn.addEventListener('click', () => {
-            const editedHtml = reportContentDiv.innerHTML;
-            const markdownContent = htmlToMarkdown(editedHtml);
-            const validation = validateMarkdownContent(markdownContent);
-            if (!validation.isValid) {
-                alert(`Invalid report structure. Missing sections: ${validation.missingSections.join(', ')}. Please ensure all required sections are present.`);
+            folderPath = folderPath.replace(/[\/\\]+/g, '\\').trim();
+            if (!/^[a-zA-Z]:[\\\/][a-zA-Z0-9\s._\\\/-]+$/.test(folderPath)) {
+                alert('Invalid folder path format. Use a valid Windows path (e.g., C:\\Users\\Name\\Folder).');
                 return;
             }
-            localStorage.setItem('savedReportContent', markdownContent);
-            const reprocessedContent = processMarkdownContent(markdownContent);
-            reportContentDiv.innerHTML = reprocessedContent;
-            reportContentDiv.contentEditable = false;
-            editBtn.style.display = 'inline-block';
-            saveBtn.style.display = 'none';
-            cancelBtn.style.display = 'none';
-        });
 
-        cancelBtn.addEventListener('click', () => {
-            reportContentDiv.innerHTML = originalContent;
-            localStorage.setItem('savedReportContent', originalMarkdown);
-            reportContentDiv.contentEditable = false;
-            editBtn.style.display = 'inline-block';
-            saveBtn.style.display = 'none';
-            cancelBtn.style.display = 'none';
-        });
+            document.getElementById('loading').classList.remove('d-none');
+            ['analysis-report', 'visualizations', 'evaluation', 'hyperlinks'].forEach(id => {
+                document.getElementById(id).classList.add('d-none');
+            });
 
-        // Download as PDF (placeholder)
-        document.getElementById('downloadReportBtn').addEventListener('click', () => {
-            alert('PDF download not implemented in this example');
+            try {
+                const response = await fetch('http://127.0.0.1:8080/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ folder_path: folderPath })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error ${response.status}`);
+                }
+
+                const data = await response.json();
+                document.getElementById('loading').classList.add('d-none');
+                ['analysis-report', 'visualizations', 'evaluation', 'hyperlinks'].forEach(id => {
+                    document.getElementById(id).classList.remove('d-none');
+                });
+
+                // Markdown Report
+                let originalContent = data.report || '';
+                document.getElementById('report-content').innerHTML = marked.parse(originalContent);
+
+                // Edit functionality
+                document.getElementById('edit-report-btn').onclick = () => {
+                    const textarea = document.createElement('textarea');
+                    textarea.value = originalContent;
+                    document.getElementById('report-content').innerHTML = '';
+                    document.getElementById('report-content').appendChild(textarea);
+                    document.getElementById('edit-report-btn').classList.add('d-none');
+                    document.getElementById('save-report-btn').classList.remove('d-none');
+                    document.getElementById('cancel-edit-btn').classList.remove('d-none');
+                };
+
+                document.getElementById('cancel-edit-btn').onclick = () => {
+                    document.getElementById('report-content').innerHTML = marked.parse(originalContent);
+                    document.getElementById('edit-report-btn').classList.remove('d-none');
+                    document.getElementById('save-report-btn').classList.add('d-none');
+                    document.getElementById('cancel-edit-btn').classList.add('d-none');
+                };
+
+                document.getElementById('save-report-btn').onclick = () => {
+                    const textarea = document.getElementById('report-content').querySelector('textarea');
+                    originalContent = textarea.value;
+                    document.getElementById('report-content').innerHTML = marked.parse(originalContent);
+                    document.getElementById('edit-report-btn').classList.remove('d-none');
+                    document.getElementById('save-report-btn').classList.add('d-none');
+                    document.getElementById('cancel-edit-btn').classList.add('d-none');
+                };
+
+                // Download button
+                document.getElementById('download-report-btn').onclick = () => {
+                    alert('PDF download not yet implemented.');
+                };
+
+                // Charts
+                if (Array.isArray(data.visualizations)) {
+                    const ctx = document.createElement('canvas');
+                    document.getElementById('visualizations-content').appendChild(ctx);
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: data.visualizations.map(v => v.version),
+                            datasets: [{
+                                label: 'Sample Metric',
+                                data: data.visualizations.map(v => v.value),
+                                borderColor: '#007bff',
+                                backgroundColor: 'rgba(0,123,255,0.1)',
+                                fill: true,
+                                tension: 0.3
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: { display: true }
+                            }
+                        }
+                    });
+                }
+
+                // Evaluation
+                document.getElementById('evaluation-content').innerHTML = data.evaluation || '<em>No evaluation provided</em>';
+
+                // Hyperlinks
+                const list = document.createElement('ul');
+                (data.hyperlinks || []).forEach(link => {
+                    const li = document.createElement('li');
+                    const a = document.createElement('a');
+                    a.href = link.url;
+                    a.textContent = link.text || link.url;
+                    a.target = "_blank";
+                    li.appendChild(a);
+                    list.appendChild(li);
+                });
+                const container = document.getElementById('hyperlinks-content');
+                container.innerHTML = '';
+                container.appendChild(list);
+
+            } catch (error) {
+                console.error(error);
+                alert(`Failed to analyze PDFs: ${error.message}`);
+                document.getElementById('loading').classList.add('d-none');
+            }
         });
     </script>
+
 </body>
 </html>
