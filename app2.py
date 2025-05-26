@@ -1283,9 +1283,16 @@ async def run_full_analysis(request: FolderPathRequest) -> AnalysisResponse:
     logger.info(f"Processing {len(pdf_files)} PDF files")
 
     # Extract versions from PDF filenames
+    # versions = []
+    # for pdf_path in pdf_files:
+    #     match = re.search(r'_(\d+\.\d+)\.pdf$', os.path.basename(pdf_path))
+    #     if match:
+    #         versions.append(match.group(1))
+    # versions = sorted(set(versions))
     versions = []
     for pdf_path in pdf_files:
-        match = re.search(r'_(\d+\.\d+)\.pdf$', os.path.basename(pdf_path))
+        # New pattern to match "Workcloud Task Management XX.XX" format
+        match = re.search(r'(\d+\.\d+)(?:\s|\.)', os.path.basename(pdf_path))
         if match:
             versions.append(match.group(1))
     versions = sorted(set(versions))
