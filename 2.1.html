@@ -35,25 +35,78 @@
             padding: 30px;
         }
 
-        .report-section, .visualizations-section, .evaluation-section, .hyperlinks-section {
-            margin-top: 20px;
+        .spinner {
+            margin: 0 auto;
+            border: 8px solid #f3f3f3; /* Light grey */
+            border-top: 8px solid var(--primary-color); /* Blue */
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .report-section {
             padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        h2, h3 {
+            color: var(--primary-color);
+            margin-top: 20px;
+        }
+
+        h2 {
+            font-size: 1.5em;
+        }
+
+        h3 {
+            font-size: 1.25em;
+            margin-top: 15px;
+        }
+
+        /* Styling for bold text */
+        .bold {
+            font-weight: bold;
+        }
+
+        /* Table styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        table th, table td {
             border: 1px solid #ddd;
-            border-radius: 4px;
-            background: white;
+            padding: 8px;
+            text-align: left;
         }
 
-        .btn-primary {
-            background-color: var(--primary-color);
-            border: none;
-            padding: 12px 25px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-
-        .btn-primary:hover {
+        table th {
             background-color: var(--secondary-color);
-            transform: translateY(-1px);
+            color: white;
+        }
+
+        table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        table tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        /* Styling for markdown headings */
+        .markdown-heading {
+            font-weight: bold;
+            font-size: 1.5em;
+            margin-top: 20px;
         }
     </style>
 </head>
@@ -67,7 +120,7 @@
         </div>
 
         <div id="loading" class="loading" style="display: none;">
-            <p>Loading...</p>
+            <div class="spinner"></div>
             <p>Analyzing PDFs... This may take a few minutes.</p>
         </div>
 
@@ -100,6 +153,29 @@
 
     <script src="https://cdn.jsdelivr.net/npm/axios@1.4.0/dist/axios.min.js"></script>
     <script>
+        // Render report with custom styling
+        function renderReport(content) {
+            // Replace Markdown headings with styled HTML
+            let styledContent = content
+                .replace(/## (.*?) ##/g, '<h2 class="markdown-heading">\$1</h2>') // Heading level 2
+                .replace(/### (.*?) ###/g, '<h3>\$1</h3>') // Heading level 3
+                .replace(/(\*\*.*?\*\*)/g, '<span class="bold">\$1</span>'); // Bold text
+
+            // Handle tables specifically
+            styledContent = styledContent.replace(/(\|.*?\|(?:\n\|[-:]+[-|:]*\|\n(?:\|.*?\|(?:\n)?)+))/g, function (match) {
+                const rows = match.split('\n').map(row => row.split('|').slice(1, -1).map(cell => cell.trim()));
+                if (rows.length < 2) return match; // Not a valid table
+
+                let htmlTable = '<table>';
+                htmlTable += '<thead><tr>' + rows[0].map(th => `<th>${th}</th>`).join('') + '</tr></thead>';
+                htmlTable += '<tbody>' + rows.slice(1).map(r => '<tr>' + r.map(td => `<td>${td}</td>`).join('') + '</tr>').join('') + '</tbody>';
+                htmlTable += '</table>';
+                return htmlTable;
+            });
+
+            document.getElementById('report-content').innerHTML = styledContent;
+        }
+
         document.getElementById('analyze-btn').addEventListener('click', async () => {
             let folderPath = document.getElementById('folder-path').value.trim();
             if (!folderPath) {
@@ -127,7 +203,8 @@
                 document.getElementById('hyperlinks').style.display = 'block';
 
                 // Render report
-                document.getElementById('report-content').innerHTML = marked.parse(response.data.report || '');
+                const reportMarkdown = response.data.report || '';
+                renderReport(reportMarkdown);
 
                 // Render visualizations
                 const vizContent = response.data.visualizations.map((base64, index) => 
@@ -154,37 +231,4 @@
         });
 
         // Edit report functionality
-        const reportContentDiv = document.getElementById('report-content');
-        const editBtn = document.getElementById('edit-report-btn');
-        const saveBtn = document.getElementById('save-report-btn');
-        const cancelBtn = document.getElementById('cancel-edit-btn');
-        let originalContent = '';
-
-        editBtn.addEventListener('click', () => {
-            originalContent = reportContentDiv.innerHTML;
-            reportContentDiv.contentEditable = true;
-            reportContentDiv.focus();
-            editBtn.style.display = 'none';
-            saveBtn.style.display = 'inline-block';
-            cancelBtn.style.display = 'inline-block';
-        });
-
-        saveBtn.addEventListener('click', () => {
-            const editedHtml = reportContentDiv.innerHTML;
-            reportContentDiv.innerHTML = marked.parse(editedHtml);
-            reportContentDiv.contentEditable = false;
-            editBtn.style.display = 'inline-block';
-            saveBtn.style.display = 'none';
-            cancelBtn.style.display = 'none';
-        });
-
-        cancelBtn.addEventListener('click', () => {
-            reportContentDiv.innerHTML = originalContent;
-            reportContentDiv.contentEditable = false;
-            editBtn.style.display = 'inline-block';
-            saveBtn.style.display = 'none';
-            cancelBtn.style.display = 'none';
-        });
-    </script>
-</body>
-</html>
+        const reportContentDiv = document.getElementById('report-content
