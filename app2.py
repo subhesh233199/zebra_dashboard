@@ -1468,11 +1468,38 @@ async def run_full_analysis(request: FolderPathRequest) -> AnalysisResponse:
         hyperlinks=all_hyperlinks
     )
 
+# @app.post("/analyze", response_model=AnalysisResponse)
+# async def analyze_pdfs(request: FolderPathRequest):
+#     try:
+#         cleanup_old_cache()
+
+#         folder_path = convert_windows_path(request.folder_path)
+#         folder_path = os.path.normpath(folder_path)
+#         folder_path_hash = hash_string(folder_path)
+#         pdf_files = get_pdf_files_from_folder(folder_path)
+#         pdfs_hash = hash_pdf_contents(pdf_files)
+#         logger.info(f"Computed hashes - folder_path_hash: {folder_path_hash}, pdfs_hash: {pdfs_hash}")
+
+#         cached_response = get_cached_report(folder_path_hash, pdfs_hash)
+#         if cached_response:
+#             logger.info(f"Cache hit for folder_path_hash: {folder_path_hash}")
+#             return cached_response
+
+#         logger.info(f"Cache miss for folder_path_hash: {folder_path_hash}, running full analysis")
+#         response = await run_full_analysis(request)
+
+#         store_cached_report(folder_path_hash, pdfs_hash, response)
+#         return response
+
+#     except Exception as e:
+#         logger.error(f"Error in /analyze endpoint: {str(e)}")
+#         raise HTTPException(status_code=500, detail=str(e))
+#     finally:
+#         plt.close('all')
 @app.post("/analyze", response_model=AnalysisResponse)
 async def analyze_pdfs(request: FolderPathRequest):
     try:
         cleanup_old_cache()
-
         folder_path = convert_windows_path(request.folder_path)
         folder_path = os.path.normpath(folder_path)
         folder_path_hash = hash_string(folder_path)
@@ -1480,17 +1507,12 @@ async def analyze_pdfs(request: FolderPathRequest):
         pdfs_hash = hash_pdf_contents(pdf_files)
         logger.info(f"Computed hashes - folder_path_hash: {folder_path_hash}, pdfs_hash: {pdfs_hash}")
 
-        cached_response = get_cached_report(folder_path_hash, pdfs_hash)
-        if cached_response:
-            logger.info(f"Cache hit for folder_path_hash: {folder_path_hash}")
-            return cached_response
-
-        logger.info(f"Cache miss for folder_path_hash: {folder_path_hash}, running full analysis")
+        # Skip cache for testing
+        logger.info("Skipping cache for debugging")
         response = await run_full_analysis(request)
-
+        
         store_cached_report(folder_path_hash, pdfs_hash, response)
         return response
-
     except Exception as e:
         logger.error(f"Error in /analyze endpoint: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
