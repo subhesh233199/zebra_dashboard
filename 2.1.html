@@ -3,75 +3,380 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RRR Analysis Tool</title>
+    <title>Professional RRR Analysis Tool</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         :root {
-            --primary-color: #2a3f5f;
-            --secondary-color: #4a6fa5;
-            --accent-color: #6c757d;
-            --success-color: #28a745;
-            --warning-color: #ffc107;
-            --danger-color: #dc3545;
-            --light-bg: #f8f9fa;
-            --dark-bg: #343a40;
+            --primary-color: #2c3e50; /* Darker blue for primary actions/branding */
+            --secondary-color: #34495e; /* Slightly lighter dark blue */
+            --accent-color: #3498db; /* A vibrant blue for highlights */
+            --text-color: #2c3e50;
+            --light-bg: #ecf0f1; /* Light gray background */
+            --card-bg: #ffffff;
+            --border-color: #ced4da;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --shadow-light: rgba(0, 0, 0, 0.08);
+            --shadow-medium: rgba(0, 0, 0, 0.15);
         }
 
         body {
-            padding: 20px;
+            font-family: 'Poppins', sans-serif;
             background-color: var(--light-bg);
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            color: var(--text-color);
             line-height: 1.6;
+            padding: 0;
+            margin: 0;
         }
 
         .container {
-            max-width: 1200px;
-            margin: 0 auto;
+            max-width: 1100px; /* Slightly narrower for better content focus */
+            margin: 40px auto; /* More vertical spacing */
+            padding: 20px;
+        }
+
+        .header {
+            background-color: var(--primary-color);
+            color: #ffffff;
+            padding: 30px 0;
+            text-align: center;
+            margin-bottom: 40px;
+            box-shadow: 0 4px 8px var(--shadow-medium);
+            border-radius: 8px;
+        }
+
+        .header h1 {
+            font-weight: 700;
+            margin-bottom: 0;
+        }
+
+        .section-card {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px var(--shadow-light);
+            border: 1px solid var(--border-color);
+        }
+
+        .section-card h2 {
+            color: var(--primary-color);
+            margin-bottom: 25px;
+            font-weight: 600;
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 10px;
+            display: inline-block; /* To make the border only as wide as the text */
+        }
+
+        .form-control {
+            border-radius: 5px;
+            border: 1px solid var(--border-color);
+            padding: 12px 15px;
+            font-size: 1rem;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .form-control:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 0.25rem rgba(52, 152, 219, 0.25); /* Bootstrap focus color */
+        }
+
+        .btn-primary {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+            padding: 12px 25px;
+            font-weight: 600;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px var(--shadow-light);
+        }
+
+        .btn-primary:hover {
+            background-color: #2980b9; /* Slightly darker accent on hover */
+            border-color: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px var(--shadow-medium);
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+            color: #ffffff;
+            padding: 10px 20px;
+            font-weight: 400;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background-color: #2c3e50;
+            border-color: #2c3e50;
+            transform: translateY(-1px);
+        }
+
+        .btn-success {
+            background-color: var(--success-color);
+            border-color: var(--success-color);
+            padding: 10px 20px;
+            font-weight: 400;
+            border-radius: 5px;
+        }
+        .btn-success:hover {
+            background-color: #229a56;
+            border-color: #229a56;
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+            border-color: var(--danger-color);
+            padding: 10px 20px;
+            font-weight: 400;
+            border-radius: 5px;
+        }
+        .btn-danger:hover {
+            background-color: #c0392b;
+            border-color: #c0392b;
+        }
+
+        .btn-info {
+            background-color: #17a2b8; /* Using Bootstrap's info color for consistency */
+            border-color: #17a2b8;
+            padding: 10px 20px;
+            font-weight: 400;
+            border-radius: 5px;
+        }
+        .btn-info:hover {
+            background-color: #138496;
+            border-color: #138496;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 15px; /* Spacing between input and button */
+            margin-bottom: 30px;
+            align-items: center;
+        }
+
+        .input-group .form-control {
+            flex-grow: 1;
         }
 
         .loading {
             text-align: center;
             padding: 30px;
+            font-size: 1.1rem;
+            color: var(--secondary-color);
+            display: flex; /* Use flexbox for centering spinner and text */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .loading .spinner-border {
+            width: 3rem;
+            height: 3rem;
+            margin-bottom: 15px;
+            color: var(--accent-color); /* Spinner color */
         }
 
-        .report-section, .visualizations-section, .evaluation-section, .hyperlinks-section {
-            margin-top: 20px;
+
+        #report-content, #evaluation-content {
+            background-color: var(--light-bg);
             padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            background: white;
+            border-radius: 5px;
+            border: 1px dashed var(--border-color); /* Dashed border for content area */
+            min-height: 100px; /* Ensure some visible area */
+            overflow-y: auto;
         }
 
-        .btn-primary {
-            background-color: var(--primary-color);
-            border: none;
-            padding: 12px 25px;
-            font-weight: 600;
-            transition: all 0.3s ease;
+        #report-content[contenteditable="true"] {
+            background-color: #fff;
+            border: 1px solid var(--accent-color);
+            box-shadow: 0 0 0 0.25rem rgba(52, 152, 219, 0.25);
         }
 
-        .btn-primary:hover {
+        .report-actions {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px; /* Space between action buttons */
+            justify-content: flex-end; /* Align buttons to the right */
+        }
+
+        /* Markdown content styling */
+        #report-content h1, #report-content h2, #report-content h3, #report-content h4, #report-content h5, #report-content h6 {
+            color: var(--primary-color);
+            margin-top: 1.5em;
+            margin-bottom: 0.8em;
+            padding-bottom: 5px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        #report-content h1 { font-size: 2.2rem; border-bottom: 2px solid var(--accent-color); }
+        #report-content h2 { font-size: 1.8rem; border-bottom: 1px solid var(--accent-color); }
+        #report-content h3 { font-size: 1.5rem; }
+        #report-content p {
+            margin-bottom: 1em;
+            line-height: 1.7;
+        }
+        #report-content ul, #report-content ol {
+            margin-left: 20px;
+            margin-bottom: 1em;
+        }
+        #report-content li {
+            margin-bottom: 0.5em;
+        }
+
+        /* Table specific styling for markdown */
+        #report-content table {
+            width: 100%;
+            margin-bottom: 1.5rem;
+            border-collapse: collapse;
+            border-radius: 5px;
+            overflow: hidden; /* Ensures rounded corners apply to content */
+            box-shadow: 0 2px 5px var(--shadow-light);
+        }
+
+        #report-content th,
+        #report-content td {
+            padding: 12px 15px;
+            text-align: left;
+            border: 1px solid var(--border-color);
+        }
+
+        #report-content thead {
             background-color: var(--secondary-color);
-            transform: translateY(-1px);
+            color: #ffffff;
+        }
+
+        #report-content tbody tr:nth-child(even) {
+            background-color: var(--light-bg);
+        }
+
+        #report-content tbody tr:hover {
+            background-color: #e0e6e9; /* Slightly darker hover */
+        }
+
+        /* Layout for two tables in one row */
+        .metrics-summary-tables {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px; /* Increased gap for better separation */
+            margin-top: 20px; /* Add some space above the tables */
+        }
+        .metrics-summary-tables .table-wrapper {
+            flex: 1 1 calc(50% - 15px); /* Allows two tables, with gap, to fit */
+            box-sizing: border-box; /* Include padding/border in width calculation */
+            min-width: 300px; /* Prevent tables from becoming too narrow */
+        }
+
+
+        /* Visualizations grid */
+        .visualizations-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Responsive grid for images */
+            gap: 20px;
+            justify-items: center; /* Center images within their grid cells */
+        }
+
+        .visualizations-content img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            box-shadow: 0 2px 5px var(--shadow-light);
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .visualizations-content img:hover {
+            transform: scale(1.02);
+        }
+
+        .hyperlinks-content div {
+            padding: 8px 0;
+            border-bottom: 1px dashed #eee;
+        }
+
+        .hyperlinks-content div:last-child {
+            border-bottom: none;
+        }
+
+        .hyperlinks-content a {
+            color: var(--accent-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .hyperlinks-content a:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .container {
+                margin: 20px auto;
+                padding: 15px;
+            }
+
+            .header {
+                padding: 20px 0;
+                margin-bottom: 20px;
+            }
+
+            .section-card {
+                padding: 20px;
+                margin-bottom: 20px;
+            }
+
+            .input-group {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .btn-primary {
+                width: 100%;
+            }
+
+            .report-actions {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .metrics-summary-tables .table-wrapper {
+                flex: 1 1 100%; /* Stack tables on small screens */
+            }
+
+            .visualizations-content {
+                grid-template-columns: 1fr; /* Single column for images on small screens */
+            }
         }
     </style>
 </head>
 <body>
+    <div class="header">
+        <div class="container">
+            <h1>RRR Analysis Tool</h1>
+            <p class="lead">Efficiently analyze your PDF documents</p>
+        </div>
+    </div>
+
     <div class="container">
-        <h1 class="mb-4 text-center" style="color: var(--primary-color);">RRR Analysis Tool</h1>
-
-        <div class="input-section">
-            <input type="text" id="folder-path" class="form-control" placeholder="Enter Folder Path">
-            <button id="analyze-btn" class="btn btn-primary">Analyze</button>
+        <div class="section-card">
+            <h2>Input Folder</h2>
+            <div class="input-group">
+                <input type="text" id="folder-path" class="form-control" placeholder="Enter Folder Path (e.g., C:\Users\Documents\MyPDFs)">
+                <button id="analyze-btn" class="btn btn-primary">Analyze Documents</button>
+            </div>
+            <div id="loading" class="loading" style="display: none;">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p>Analyzing PDFs... This may take a few moments.</p>
+            </div>
         </div>
 
-        <div id="loading" class="loading" style="display: none;">
-            <p>Loading...</p>
-            <p>Analyzing PDFs... This may take a few minutes.</p>
-        </div>
-
-        <div id="analysis-report" class="report-section">
+        <div id="analysis-report" class="section-card" style="display: none;">
             <h2>Analysis Report</h2>
             <div id="report-content"></div>
             <div id="report-actions" class="report-actions">
@@ -82,17 +387,17 @@
             </div>
         </div>
 
-        <div id="visualizations" class="visualizations-section">
+        <div id="visualizations" class="section-card" style="display: none;">
             <h2>Visualizations</h2>
             <div id="visualizations-content"></div>
         </div>
 
-        <div id="evaluation" class="evaluation-section">
+        <div id="evaluation" class="section-card" style="display: none;">
             <h2>Evaluation</h2>
             <div id="evaluation-content"></div>
         </div>
 
-        <div id="hyperlinks" class="hyperlinks-section">
+        <div id="hyperlinks" class="section-card" style="display: none;">
             <h2>Hyperlinks</h2>
             <div id="hyperlinks-content"></div>
         </div>
@@ -107,12 +412,20 @@
                 return;
             }
 
-            // Show loading state
-            document.getElementById('loading').style.display = 'block';
+            // Show loading state with spinner
+            document.getElementById('loading').style.display = 'flex'; // Use flex to center spinner
             document.getElementById('analysis-report').style.display = 'none';
             document.getElementById('visualizations').style.display = 'none';
             document.getElementById('evaluation').style.display = 'none';
             document.getElementById('hyperlinks').style.display = 'none';
+            document.getElementById('analyze-btn').disabled = true; // Disable button during analysis
+
+
+            // Clear previous content
+            document.getElementById('report-content').innerHTML = '';
+            document.getElementById('visualizations-content').innerHTML = '';
+            document.getElementById('evaluation-content').innerHTML = '';
+            document.getElementById('hyperlinks-content').innerHTML = '';
 
             try {
                 const response = await axios.post('http://127.0.0.1:8080/analyze', {
@@ -121,35 +434,84 @@
 
                 // Hide loading state
                 document.getElementById('loading').style.display = 'none';
+                document.getElementById('analyze-btn').disabled = false; // Re-enable button
                 document.getElementById('analysis-report').style.display = 'block';
                 document.getElementById('visualizations').style.display = 'block';
                 document.getElementById('evaluation').style.display = 'block';
                 document.getElementById('hyperlinks').style.display = 'block';
 
                 // Render report
-                document.getElementById('report-content').innerHTML = marked.parse(response.data.report || '');
+                const reportContentHtml = marked.parse(response.data.report || 'No report content provided.');
+                document.getElementById('report-content').innerHTML = reportContentHtml;
+
+                // --- Special Handling for Tables in Report Content ---
+                // Find all tables within the report content
+                const tables = document.querySelectorAll('#report-content table');
+                if (tables.length > 0) {
+                    // Assuming you have a heading with id="metrics-summary" in your markdown
+                    const metricsSummaryHeading = document.getElementById('report-content').querySelector('h2#metrics-summary');
+                    if (metricsSummaryHeading) {
+                        const tableContainer = document.createElement('div');
+                        tableContainer.className = 'metrics-summary-tables'; // Class for flex container for tables
+
+                        let currentTableGroup = document.createElement('div');
+                        currentTableGroup.className = 'd-flex flex-wrap gap-4'; // Flexbox for tables within the group
+
+                        let tableCountInGroup = 0;
+
+                        tables.forEach(table => {
+                            if (table.closest('#report-content')) { // Ensure it's a table inside report-content
+                                const tableWrapper = document.createElement('div');
+                                tableWrapper.className = 'table-wrapper';
+                                tableWrapper.appendChild(table.cloneNode(true)); // Clone to move, not remove
+
+                                currentTableGroup.appendChild(tableWrapper);
+                                tableCountInGroup++;
+
+                                if (tableCountInGroup === 2) { // After two tables, append group and start new one
+                                    tableContainer.appendChild(currentTableGroup);
+                                    currentTableGroup = document.createElement('div');
+                                    currentTableGroup.className = 'd-flex flex-wrap gap-4';
+                                    tableCountInGroup = 0;
+                                }
+                                table.remove(); // Remove original table from report-content
+                            }
+                        });
+
+                        // Append any remaining tables if the last group has less than 2
+                        if (currentTableGroup.children.length > 0) {
+                            tableContainer.appendChild(currentTableGroup);
+                        }
+
+                        // Insert the new table container after the metrics summary heading
+                        metricsSummaryHeading.parentNode.insertBefore(tableContainer, metricsSummaryHeading.nextSibling);
+                    }
+                }
+                // --- End Special Handling for Tables ---
+
 
                 // Render visualizations
-                const vizContent = response.data.visualizations.map((base64, index) => 
-                    `<img src="data:image/png;base64,${base64}" class="visualization" alt="Visualization ${index + 1}">`
+                const vizContent = response.data.visualizations.map((base64, index) =>
+                    `<img src="data:image/png;base64,${base64}" class="visualization img-fluid" alt="Visualization ${index + 1}">`
                 ).join('');
-                document.getElementById('visualizations-content').innerHTML = vizContent;
+                document.getElementById('visualizations-content').innerHTML = vizContent || 'No visualizations available.';
 
                 // Render evaluation
-                document.getElementById('evaluation-content').innerHTML = response.data.evaluation || 'No evaluation provided';
+                document.getElementById('evaluation-content').innerHTML = response.data.evaluation || 'No evaluation provided.';
 
                 // Render hyperlinks
                 const hyperlinksList = response.data.hyperlinks.map(link => `
                     <div>
-                        <a href="${link.url}" target="_blank">${link.text}</a>
+                        <a href="${link.url}" target="_blank" rel="noopener noreferrer">${link.text}</a>
                     </div>
                 `).join('');
-                document.getElementById('hyperlinks-content').innerHTML = hyperlinksList;
+                document.getElementById('hyperlinks-content').innerHTML = hyperlinksList || 'No hyperlinks found.';
 
             } catch (error) {
                 console.error('Error:', error);
-                alert('Error: ' + (error.response?.data?.detail || error.message));
+                alert('Error: ' + (error.response?.data?.detail || error.message || 'An unknown error occurred.'));
                 document.getElementById('loading').style.display = 'none';
+                document.getElementById('analyze-btn').disabled = false; // Re-enable button on error
             }
         });
 
@@ -170,12 +532,11 @@
         });
 
         saveBtn.addEventListener('click', () => {
-            const editedHtml = reportContentDiv.innerHTML;
-            reportContentDiv.innerHTML = marked.parse(editedHtml);
             reportContentDiv.contentEditable = false;
             editBtn.style.display = 'inline-block';
             saveBtn.style.display = 'none';
             cancelBtn.style.display = 'none';
+            // If you need to send this back to a server, you'd send reportContentDiv.innerHTML
         });
 
         cancelBtn.addEventListener('click', () => {
@@ -184,6 +545,11 @@
             editBtn.style.display = 'inline-block';
             saveBtn.style.display = 'none';
             cancelBtn.style.display = 'none';
+        });
+
+        // Placeholder for Download as PDF functionality
+        document.getElementById('download-report-btn').addEventListener('click', () => {
+            alert('Download as PDF functionality not yet implemented.');
         });
     </script>
 </body>
