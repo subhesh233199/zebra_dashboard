@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Professional RRR Analysis Tool</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link href="[https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css](https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css)" rel="stylesheet">
+    <link href="[https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Consolas:wght@400&display=swap](https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Consolas:wght@400&display=swap)" rel="stylesheet">
+    <script src="[https://cdn.jsdelivr.net/npm/marked/marked.min.js](https://cdn.jsdelivr.net/npm/marked/marked.min.js)"></script>
     <style>
         :root {
             --primary-color: #2c3e50; /* Darker blue for primary actions/branding */
@@ -21,6 +21,7 @@
             --danger-color: #e74c3c;
             --shadow-light: rgba(0, 0, 0, 0.08);
             --shadow-medium: rgba(0, 0, 0, 0.15);
+            --dark-bg: #212529; /* For code blocks */
         }
 
         body {
@@ -215,16 +216,58 @@
         #report-content h1 { font-size: 2.2rem; border-bottom: 2px solid var(--accent-color); }
         #report-content h2 { font-size: 1.8rem; border-bottom: 1px solid var(--accent-color); }
         #report-content h3 { font-size: 1.5rem; }
+        #report-content h4 { font-size: 1.3rem; } /* Added specific styling for H4 */
+        #report-content h5 { font-size: 1.1rem; } /* Added specific styling for H5 */
+        #report-content h6 { font-size: 1rem; }   /* Added specific styling for H6 */
+
         #report-content p {
             margin-bottom: 1em;
             line-height: 1.7;
+            font-size: 1rem; /* Ensure consistent paragraph font size */
         }
         #report-content ul, #report-content ol {
             margin-left: 20px;
             margin-bottom: 1em;
+            padding-left: 10px; /* Add slight padding for list markers */
         }
         #report-content li {
             margin-bottom: 0.5em;
+        }
+
+        /* Blockquote styling */
+        #report-content blockquote {
+            border-left: 5px solid var(--accent-color);
+            padding: 10px 20px;
+            margin: 1.5em 0;
+            background-color: #f8f9fa; /* Light background for quotes */
+            color: var(--secondary-color); /* Slightly different text color */
+            font-style: italic;
+            border-radius: 4px;
+        }
+
+        /* Code block styling (for triple backticks ``` ) */
+        #report-content pre {
+            background-color: var(--dark-bg); /* Dark background for code blocks */
+            color: #f8f9fa; /* Light text color */
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto; /* Allow horizontal scrolling for long lines */
+            font-family: 'Consolas', 'Monaco', monospace; /* Monospaced font for code */
+            font-size: 0.9em;
+            margin-bottom: 1.5em;
+        }
+        #report-content pre code {
+            color: inherit; /* Inherit color from pre */
+        }
+
+        /* Inline code styling (for single backticks ` ) */
+        #report-content code {
+            background-color: #e9ecef; /* Light background for inline code */
+            color: var(--primary-color);
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9em;
         }
 
         /* Table specific styling for markdown */
@@ -272,23 +315,21 @@
         }
 
 
-        /* Visualizations grid - Two images per row */
+        /* Visualizations grid - Two images per row, with size control */
         .visualizations-content {
             display: grid;
-            /* Exactly two columns for larger screens, ensuring they take equal space */
-            grid-template-columns: repeat(2, 1fr);
+            /* Aim for two columns. Each column will be at least 450px, and stretch evenly. */
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
             gap: 20px;
             place-items: center; /* Centers content both horizontally and vertically in grid cells */
-            /* Optional: Add a max-width to the grid container itself if images are becoming too huge in very wide screens */
-            /* max-width: 900px; */
-            /* margin: 0 auto; */
+            padding-bottom: 20px; /* Add some padding at the bottom of the grid */
         }
 
         .visualizations-content img {
-            max-width: 100%; /* Ensure images scale within their grid cell */
-            /* Set a maximum height to prevent excessively tall images */
-            max-height: 400px; /* Adjust this value as needed to control image height */
-            width: auto; /* Allow width to adjust based on aspect ratio and max-height */
+            max-width: 500px; /* Stronger maximum width for the image itself */
+            width: 100%; /* Ensure it fills its grid cell up to max-width */
+            height: auto; /* Maintain aspect ratio */
+            max-height: 400px; /* Still useful for very tall images */
             object-fit: contain; /* Ensures the entire image is visible, scales down if needed */
             border: 1px solid var(--border-color);
             border-radius: 5px;
@@ -301,6 +342,12 @@
         }
 
         /* Responsive adjustments */
+        @media (max-width: 992px) { /* Adjust breakpoint for larger screens where 2 images might fit */
+            .visualizations-content {
+                grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); /* Adjust min-width for medium screens */
+            }
+        }
+
         @media (max-width: 768px) {
             .container {
                 margin: 20px auto;
@@ -342,6 +389,7 @@
 
             .visualizations-content img {
                  max-height: 300px; /* Adjust max-height for smaller screens */
+                 max-width: 100%; /* Allow full width on smaller screens */
             }
         }
     </style>
@@ -438,55 +486,42 @@
                 document.getElementById('report-content').innerHTML = reportContentHtml;
 
                 // --- Special Handling for Tables in Report Content ---
-                // Find all tables within the report content
                 const tables = document.querySelectorAll('#report-content table');
                 if (tables.length > 0) {
-                    // Assuming you have a heading with id="metrics-summary" in your markdown.
-                    // Your backend's markdown generation for this heading should be:
-                    // e.g., `## <a id="metrics-summary">Metrics Summary</a>`
-                    // or if your markdown parser automatically adds IDs for headings, like:
-                    // `## Metrics Summary` might become `<h2 id="metrics-summary">Metrics Summary</h2>`
                     const metricsSummaryHeading = document.getElementById('report-content').querySelector('h2#metrics-summary');
                     if (metricsSummaryHeading) {
                         const tableContainer = document.createElement('div');
-                        tableContainer.className = 'metrics-summary-tables'; // Class for flex container for tables
+                        tableContainer.className = 'metrics-summary-tables';
 
                         let currentTableGroup = document.createElement('div');
-                        currentTableGroup.className = 'd-flex flex-wrap gap-4'; // Flexbox for tables within the group
+                        currentTableGroup.className = 'd-flex flex-wrap gap-4';
 
+                        const tablesToProcess = Array.from(tables);
                         let tableCountInGroup = 0;
 
-                        // Create a temporary array of tables to process, as NodeList is live
-                        const tablesToProcess = Array.from(tables);
-
                         tablesToProcess.forEach(table => {
-                            // Only process tables that are direct descendants of report-content
-                            // or are within content that needs to be grouped.
-                            // The current logic works by removing them from their original place.
                             if (table.closest('#report-content')) {
                                 const tableWrapper = document.createElement('div');
                                 tableWrapper.className = 'table-wrapper';
-                                tableWrapper.appendChild(table.cloneNode(true)); // Clone to move, not remove
+                                tableWrapper.appendChild(table.cloneNode(true));
 
                                 currentTableGroup.appendChild(tableWrapper);
                                 tableCountInGroup++;
 
-                                if (tableCountInGroup === 2) { // After two tables, append group and start new one
+                                if (tableCountInGroup === 2) {
                                     tableContainer.appendChild(currentTableGroup);
                                     currentTableGroup = document.createElement('div');
                                     currentTableGroup.className = 'd-flex flex-wrap gap-4';
                                     tableCountInGroup = 0;
                                 }
-                                table.remove(); // Remove original table from report-content
+                                table.remove();
                             }
                         });
 
-                        // Append any remaining tables if the last group has less than 2
                         if (currentTableGroup.children.length > 0) {
                             tableContainer.appendChild(currentTableGroup);
                         }
 
-                        // Insert the new table container after the metrics summary heading
                         metricsSummaryHeading.parentNode.insertBefore(tableContainer, metricsSummaryHeading.nextSibling);
                     }
                 }
@@ -514,7 +549,7 @@
                 console.error('Error:', error);
                 alert('Error: ' + (error.response?.data?.detail || error.message || 'An unknown error occurred.'));
                 document.getElementById('loading').style.display = 'none';
-                document.getElementById('analyze-btn').disabled = false; // Re-enable button on error
+                document.getElementById('analyze-btn').disabled = false;
             }
         });
 
@@ -535,14 +570,10 @@
         });
 
         saveBtn.addEventListener('click', () => {
-            // marked.parse expects markdown, but contentEditable returns HTML.
-            // For saving, you might want to convert HTML back to markdown or save as HTML directly.
-            // For this example, we'll just set contentEditable to false and rely on the browser's rendering.
             reportContentDiv.contentEditable = false;
             editBtn.style.display = 'inline-block';
             saveBtn.style.display = 'none';
             cancelBtn.style.display = 'none';
-            // If you need to send this back to a server, you'd send reportContentDiv.innerHTML
         });
 
         cancelBtn.addEventListener('click', () => {
@@ -556,8 +587,6 @@
         // Placeholder for Download as PDF functionality
         document.getElementById('download-report-btn').addEventListener('click', () => {
             alert('Download as PDF functionality not yet implemented.');
-            // You would typically use a library like jsPDF or html2pdf.js here
-            // to convert the report content to a PDF.
         });
     </script>
 </body>
