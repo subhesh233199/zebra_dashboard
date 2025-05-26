@@ -561,7 +561,7 @@
         let originalContent = '';
 
         editBtn.addEventListener('click', () => {
-            originalContent = reportContentDiv.innerHTML; // Store current rendered HTML
+            originalContent = reportContentDiv.innerHTML;
             reportContentDiv.contentEditable = true;
             reportContentDiv.focus();
             editBtn.style.display = 'none';
@@ -570,18 +570,14 @@
         });
 
         saveBtn.addEventListener('click', () => {
-            // When saving, if the user was editing HTML, you just turn off contentEditable.
-            // If you want them to type markdown and then convert it, you'd need a markdown editor.
-            // For now, assume direct HTML editing when contentEditable is true.
             reportContentDiv.contentEditable = false;
             editBtn.style.display = 'inline-block';
             saveBtn.style.display = 'none';
             cancelBtn.style.display = 'none';
-            // If you need to send this back to a server, you'd send reportContentDiv.innerHTML
         });
 
         cancelBtn.addEventListener('click', () => {
-            reportContentDiv.innerHTML = originalContent; // Revert to the stored HTML
+            reportContentDiv.innerHTML = originalContent;
             reportContentDiv.contentEditable = false;
             editBtn.style.display = 'inline-block';
             saveBtn.style.display = 'none';
@@ -591,8 +587,6 @@
         // Placeholder for Download as PDF functionality
         document.getElementById('download-report-btn').addEventListener('click', () => {
             alert('Download as PDF functionality not yet implemented.');
-            // You would typically use a library like jsPDF or html2pdf.js here
-            // to convert the report content to a PDF.
         });
     </script>
 </body>
