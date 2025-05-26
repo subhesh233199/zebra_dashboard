@@ -272,16 +272,16 @@
         }
 
 
-        /* Visualizations grid */
+        /* Visualizations grid - Two images per row */
         .visualizations-content {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Responsive grid for images */
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); /* Adjust minmax for desired width */
             gap: 20px;
             justify-items: center; /* Center images within their grid cells */
         }
 
         .visualizations-content img {
-            max-width: 100%;
+            max-width: 100%; /* Ensure images scale within their grid cell */
             height: auto;
             border: 1px solid var(--border-color);
             border-radius: 5px;
@@ -293,6 +293,12 @@
             transform: scale(1.02);
         }
 
+        /* Responsive adjustment for visualizations on smaller screens */
+        @media (max-width: 768px) {
+            .visualizations-content {
+                grid-template-columns: 1fr; /* Show one image per row on smaller screens */
+            }
+        }
         .hyperlinks-content div {
             padding: 8px 0;
             border-bottom: 1px dashed #eee;
