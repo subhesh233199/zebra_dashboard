@@ -190,12 +190,13 @@
         }
 
         #report-content {
-            background-color: var(--light-bg);
-            padding: 20px;
-            border-radius: 5px;
-            border: 1px dashed var(--border-color);
-            min-height: 100px;
+            background-color: var(--card-bg);
+            padding: 25px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            min-height: 150px;
             overflow-y: auto;
+            box-shadow: inset 0 1px 3px var(--shadow-light);
         }
 
         #report-content[contenteditable="true"] {
@@ -213,51 +214,88 @@
 
         #report-content h1, #report-content h2, #report-content h3, #report-content h4, #report-content h5, #report-content h6 {
             color: var(--primary-color);
-            margin-top: 1.5em;
-            margin-bottom: 0.8em;
-            padding-bottom: 5px;
+            margin-top: 1.8em;
+            margin-bottom: 1em;
+            padding-bottom: 8px;
+            font-weight: 700;
+        }
+        #report-content h1 {
+            font-size: 2.4rem;
+            border-bottom: 3px solid var(--accent-color);
+        }
+        #report-content h2 {
+            font-size: 2rem;
+            border-bottom: 2px solid var(--accent-color);
+        }
+        #report-content h3 {
+            font-size: 1.6rem;
             border-bottom: 1px solid var(--border-color);
         }
-        #report-content h1 { font-size: 2.2rem; border-bottom: 2px solid var(--accent-color); }
-        #report-content h2 { font-size: 1.8rem; border-bottom: 1px solid var(--accent-color); }
-        #report-content h3 { font-size: 1.5rem; }
-        #report-content h4 { font-size: 1.3rem; }
-        #report-content h5 { font-size: 1.1rem; }
-        #report-content h6 { font-size: 1rem; }
+        #report-content h4 {
+            font-size: 1.4rem;
+        }
+        #report-content h5 {
+            font-size: 1.2rem;
+        }
+        #report-content h6 {
+            font-size: 1.1rem;
+        }
 
         #report-content p {
-            margin-bottom: 1em;
-            line-height: 1.7;
-            font-size: 1rem;
+            margin-bottom: 1.2em;
+            line-height: 1.8;
+            font-size: 1.05rem;
         }
+
         #report-content ul, #report-content ol {
-            margin-left: 20px;
-            margin-bottom: 1em;
+            margin-left: 25px;
+            margin-bottom: 1.2em;
+            padding-left: 15px;
+        }
+        #report-content ul {
+            list-style-type: none;
+        }
+        #report-content ul li::before {
+            content: "•";
+            color: var(--accent-color);
+            font-weight: bold;
+            display: inline-block;
+            width: 1em;
+            margin-left: -1em;
+        }
+        #report-content ol {
+            counter-reset: item;
+        }
+        #report-content ol li {
+            margin-bottom: 0.8em;
+            position: relative;
             padding-left: 10px;
         }
         #report-content li {
-            margin-bottom: 0.5em;
+            margin-bottom: 0.6em;
         }
 
         #report-content blockquote {
-            border-left: 5px solid var(--accent-color);
-            padding: 10px 20px;
-            margin: 1.5em 0;
-            background-color: #f8f9fa;
+            border-left: 6px solid var(--accent-color);
+            padding: 15px 25px;
+            margin: 1.8em 0;
+            background-color: #f9fafb;
             color: var(--secondary-color);
             font-style: italic;
-            border-radius: 4px;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px var(--shadow-light);
         }
 
         #report-content pre {
             background-color: var(--dark-bg);
             color: #f8f9fa;
-            padding: 15px;
-            border-radius: 5px;
+            padding: 18px;
+            border-radius: 6px;
             overflow-x: auto;
             font-family: 'Consolas', 'Monaco', monospace;
-            font-size: 0.9em;
-            margin-bottom: 1.5em;
+            font-size: 0.85em;
+            margin-bottom: 1.8em;
+            border: 1px solid var(--border-color);
         }
         #report-content pre code {
             color: inherit;
@@ -266,26 +304,29 @@
         #report-content code {
             background-color: #e9ecef;
             color: var(--primary-color);
-            padding: 2px 4px;
-            border-radius: 3px;
+            padding: 3px 6px;
+            border-radius: 4px;
             font-family: 'Consolas', 'Monaco', monospace;
             font-size: 0.9em;
         }
 
         #report-content table {
             width: 100%;
-            margin-bottom: 1.5rem;
-            border-collapse: collapse;
-            border-radius: 5px;
+            margin-bottom: 1.8rem;
+            border-collapse: separate;
+            border-spacing: 0;
+            border-radius: 6px;
             overflow: hidden;
-            box-shadow: 0 2px 5px var(--shadow-light);
+            box-shadow: 0 3px 6px var(--shadow-light);
+            font-size: 0.95rem;
         }
 
         #report-content th,
         #report-content td {
-            padding: 12px 15px;
+            padding: 14px 16px;
             text-align: left;
             border: 1px solid var(--border-color);
+            vertical-align: middle;
         }
 
         #report-content thead {
@@ -294,24 +335,124 @@
         }
 
         #report-content tbody tr:nth-child(even) {
-            background-color: var(--light-bg);
+            background-color: #f9fafb;
         }
 
         #report-content tbody tr:hover {
-            background-color: #e0e6e9;
+            background-color: #e9ecef;
+        }
+
+        #report-content .status-on-track {
+            color: var(--success-color);
+            font-weight: 600;
+        }
+        #report-content .status-medium-risk {
+            color: var(--warning-color);
+            font-weight: 600;
+        }
+        #report-content .status-risk {
+            color: var(--danger-color);
+            font-weight: 600;
+        }
+        #report-content .trend-up::before {
+            content: "↑ ";
+            color: var(--danger-color);
+            font-weight: bold;
+        }
+        #report-content .trend-down::before {
+            content: "↓ ";
+            color: var(--success-color);
+            font-weight: bold;
+        }
+        #report-content .trend-stable::before {
+            content: "→ ";
+            color: #6c757d;
+            font-weight: bold;
         }
 
         .metrics-summary-tables {
             display: flex;
             flex-wrap: wrap;
-            justify-content: center;
+            justify-content: space-between;
             gap: 20px;
-            margin-top: 20px;
+            margin-top: 25px;
         }
         .metrics-summary-tables .table-wrapper {
-            flex: 1 1 calc(50% - 15px);
+            flex: 1 1 calc(50% - 20px);
             box-sizing: border-box;
             min-width: 300px;
+            max-width: 500px;
+        }
+        .metrics-summary-tables table {
+            width: 100%;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .metrics-summary-tables .table-wrapper {
+                flex: 1 1 100%;
+                max-width: 100%;
+            }
+            #report-content table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+        }
+
+        #e-content {
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid var(--border-color);
+            min-height: 100px;
+            overflow-y: auto;
+            background-color: var(--card-bg);
+        }
+
+        #e-content p {
+            margin-bottom: 1em;
+            line-height: 1.7;
+            font-size: 1rem;
+        }
+
+        .hyperlinks div {
+            margin-bottom: 12px;
+            padding: 12px 15px;
+            background-color: #f8f9fa;
+            border: 1px solid #dfe4ea;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px var(--shadow-light);
+            transition: all 0.2s ease-in-out;
+        }
+
+        .hyperlinks div:hover {
+            background-color: #e9ecef;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 6px var(--shadow-medium);
+        }
+
+        .hyperlinks a {
+            color: var(--accent-color);
+            text-decoration: none;
+            font-size: 1rem;
+            font-weight: 500;
+            display: block;
+            word-break: break-all;
+        }
+
+        .hyperlinks a:hover {
+            text-decoration: underline;
+            color: #2980b9;
+        }
+
+        .error-message {
+            color: var(--danger-color);
+            padding: 10px;
+            margin-top: 10px;
+            border: 1px solid var(--danger-color);
+            border-radius: 4px;
+            background-color: #fdecea;
+            display: none;
         }
 
         .visualizations {
@@ -387,61 +528,6 @@
                 max-height: 200px;
             }
         }
-
-        #e-content {
-            padding: 15px;
-            border-radius: 5px;
-            border: 1px solid var(--border-color);
-            min-height: 100px;
-            overflow-y: auto;
-            background-color: var(--card-bg);
-        }
-
-        #e-content p {
-            margin-bottom: 1em;
-            line-height: 1.7;
-            font-size: 1rem;
-        }
-
-        .hyperlinks div {
-            margin-bottom: 12px;
-            padding: 12px 15px;
-            background-color: #f8f9fa;
-            border: 1px solid #dfe4ea;
-            border-radius: 6px;
-            box-shadow: 0 1px 3px var(--shadow-light);
-            transition: all 0.2s ease-in-out;
-        }
-
-        .hyperlinks div:hover {
-            background-color: #e9ecef;
-            transform: translateY(-2px);
-            box-shadow: 0 2px 6px var(--shadow-medium);
-        }
-
-        .hyperlinks a {
-            color: var(--accent-color);
-            text-decoration: none;
-            font-size: 1rem;
-            font-weight: 500;
-            display: block;
-            word-break: break-all;
-        }
-
-        .hyperlinks a:hover {
-            text-decoration: underline;
-            color: #2980b9;
-        }
-
-        .error-message {
-            color: var(--danger-color);
-            padding: 10px;
-            margin-top: 10px;
-            border: 1px solid var(--danger-color);
-            border-radius: 4px;
-            background-color: #fdecea;
-            display: none;
-        }
     </style>
 </head>
 <body>
@@ -464,7 +550,7 @@
                 <div class="spinner-border" role="status" aria-hidden="true">
                     <span class="visually-hidden">Loading...</span>
                 </div>
-                <p>Analyzing PDFs... This may take a few moments.</p>
+                <p>Analyzing PDFs...</p>
             </div>
         </div>
 
@@ -472,10 +558,10 @@
             <h2>Analysis Report</h2>
             <div id="report-content"></div>
             <div id="report-actions" class="report-actions">
-                <button id="edit-report-btn" class="btn btn-secondary">Edit Report</button>
+                <button id="edit-report-btn" class="btn btn-secondary" >Edit Report</button>
                 <button id="save-report-btn" class="btn btn-success" style="display: none;">Save Changes</button>
                 <button id="cancel-edit-btn" class="btn btn-danger" style="display: none;">Cancel</button>
-                <button id="download-report-btn" class="btn btn-info">Download as PDF</button>
+                <button id="downloadReportBtn" class="btn btn-info">Download as PDF</button>
             </div>
         </div>
 
@@ -542,49 +628,71 @@
                         ? marked.parse(reportContent)
                         : 'Error: Report content is not in a valid format.';
                     document.getElementById('report-content').innerHTML = reportContentHtml;
+
+                    // Enhance table cells with status and trend classes
+                    const tables = document.querySelectorAll('#report-content table');
+                    tables.forEach(table => {
+                        const rows = table.querySelectorAll('tbody tr');
+                        rows.forEach(row => {
+                            const statusCell = row.querySelector('td:last-child');
+                            if (statusCell) {
+                                const statusText = statusCell.textContent.trim().toUpperCase();
+                                if (statusText === 'ON TRACK') {
+                                    statusCell.classList.add('status-on-track');
+                                } else if (statusText === 'MEDIUM RISK') {
+                                    statusCell.classList.add('status-medium-risk');
+                                } else if (statusText === 'RISK') {
+                                    statusCell.classList.add('status-risk');
+                                }
+                            }
+                            const trendCell = row.querySelector('td:nth-child(3)');
+                            if (trendCell) {
+                                const trendText = trendCell.textContent.trim();
+                                if (trendText.includes('↑')) {
+                                    trendCell.classList.add('trend-up');
+                                } else if (trendText.includes('↓')) {
+                                    trendCell.classList.add('trend-down');
+                                } else if (trendText.includes('→')) {
+                                    trendCell.classList.add('trend-stable');
+                                }
+                            }
+                        });
+                    });
+
+                    // Relocate tables under Metrics Summary
+                    const metricsSummaryHeading = document.getElementById('report-content').querySelector('h2#metrics-summary');
+                    if (metricsSummaryHeading && tables.length > 0) {
+                        const tableContainer = document.createElement('div');
+                        tableContainer.className = 'metrics-summary-tables';
+                        let currentTableGroup = document.createElement('div');
+                        currentTableGroup.className = 'table-group';
+                        const tablesToProcess = Array.from(tables);
+                        let tableCountInGroup = 0;
+                        tablesToProcess.forEach(table => {
+                            if (table.closest('#report-content')) {
+                                const tableWrapper = document.createElement('div');
+                                tableWrapper.className = 'table-wrapper';
+                                tableWrapper.appendChild(table.cloneNode(true));
+                                currentTableGroup.appendChild(tableWrapper);
+                                tableCountInGroup++;
+                                if (tableCountInGroup === 2) {
+                                    tableContainer.appendChild(currentTableGroup);
+                                    currentTableGroup = document.createElement('div');
+                                    currentTableGroup.className = 'table-group';
+                                    tableCountInGroup = 0;
+                                }
+                                table.remove();
+                            }
+                        });
+                        if (currentTableGroup.children.length > 0) {
+                            tableContainer.appendChild(currentTableGroup);
+                        }
+                        metricsSummaryHeading.parentNode.insertBefore(tableContainer, metricsSummaryHeading.nextSibling);
+                    }
                 } catch (e) {
                     console.error('Markdown parsing error:', e);
                     document.getElementById('report-content').innerHTML = 
                         response.data.report || 'Error rendering report content.';
-                }
-
-                const tables = document.querySelectorAll('#report-content table');
-                const metricsSummaryHeading = document.getElementById('report-content').querySelector('h2#metrics-summary');
-                
-                if (metricsSummaryHeading && tables.length > 0) {
-                    const tableContainer = document.createElement('div');
-                    tableContainer.className = 'metrics-summary-tables';
-
-                    let currentTableGroup = document.createElement('div');
-                    currentTableGroup.className = 'table-group';
-
-                    const tablesToProcess = Array.from(tables);
-                    let tableCountInGroup = 0;
-
-                    tablesToProcess.forEach(table => {
-                        if (table.closest('#report-content')) {
-                            const tableWrapper = document.createElement('div');
-                            tableWrapper.className = 'table-wrapper';
-                            tableWrapper.appendChild(table.cloneNode(true));
-
-                            currentTableGroup.appendChild(tableWrapper);
-                            tableCountInGroup++;
-
-                            if (tableCountInGroup === 2) {
-                                tableContainer.appendChild(currentTableGroup);
-                                currentTableGroup = document.createElement('div');
-                                currentTableGroup.className = 'table-group';
-                                tableCountInGroup = 0;
-                            }
-                            table.remove();
-                        }
-                    });
-
-                    if (currentTableGroup.children.length > 0) {
-                        tableContainer.appendChild(currentTableGroup);
-                    }
-
-                    metricsSummaryHeading.parentNode.insertBefore(tableContainer, metricsSummaryHeading.nextSibling);
                 }
 
                 if (response.data.visualizations && response.data.visualizations.length > 0) {
@@ -623,11 +731,13 @@
 
         function escapeHtml(unsafe) {
             return unsafe
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
+                ? unsafe
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#39;")
+                : '';
         }
 
         function sanitizeUrl(url) {
@@ -680,7 +790,7 @@
         });
 
         document.getElementById('download-report-btn').addEventListener('click', () => {
-            alert('Download as PDF functionality would be implemented here with a library like jsPDF or html2pdf.js');
+            alert('Download as PDF functionality would be implemented here with a library like pdfmake or jsPDF');
         });
     </script>
 </body>
