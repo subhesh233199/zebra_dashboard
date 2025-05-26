@@ -878,39 +878,44 @@ Do NOT alter content. Just combine with correct formatting.""",
 
     return data_crew, report_crew, viz_crew
 
-def clean_json_output(raw_output: str) -> dict:
+def clean_json_output(raw_output: str, versions: List[str]) -> dict:
     logger.info(f"Raw analysis output: {raw_output[:200]}...")
     
-    # Synthetic data for fallback
+    # Ensure at least one version for fallback
+    fallback_versions = versions if versions else ["unknown.1"]
+    if len(fallback_versions) < 2:
+        fallback_versions.append(f"{fallback_versions[0].split('.')[0]}.{int(fallback_versions[0].split('.')[1]) + 1}")
+    
+    # Synthetic data with all values set to 0
     default_json = {
         "metrics": {
             metric: {
                 "ATLS": [
-                    {"version": "24.10", "value": 10 + i, "status": "RISK"},
-                    {"version": "24.11", "value": 8 + i, "status": "MEDIUM RISK"}
+                    {"version": fallback_versions[0], "value": 0, "status": "NEEDS REVIEW"},
+                    {"version": fallback_versions[1], "value": 0, "status": "NEEDS REVIEW"}
                 ],
                 "BTLS": [
-                    {"version": "24.10", "value": 12 + i, "status": "RISK"},
-                    {"version": "24.11", "value": 9 + i, "status": "MEDIUM RISK"}
+                    {"version": fallback_versions[0], "value": 0, "status": "NEEDS REVIEW"},
+                    {"version": fallback_versions[1], "value": 0, "status": "NEEDS REVIEW"}
                 ]
             } if metric in EXPECTED_METRICS[:5] else
             {
                 "RBS": [
-                    {"version": "24.10", "pass_count": 50, "fail_count": 5, "status": "ON TRACK"},
-                    {"version": "24.11", "pass_count": 48, "fail_count": 6, "status": "MEDIUM RISK"}
+                    {"version": fallback_versions[0], "pass_count": 0, "fail_count": 0, "status": "NEEDS REVIEW"},
+                    {"version": fallback_versions[1], "pass_count": 0, "fail_count": 0, "status": "NEEDS REVIEW"}
                 ],
                 "Tesco": [
-                    {"version": "24.10", "pass_count": 45, "fail_count": 3, "status": "ON TRACK"},
-                    {"version": "24.11", "pass_count": 46, "fail_count": 2, "status": "ON TRACK"}
+                    {"version": fallback_versions[0], "pass_count": 0, "fail_count": 0, "status": "NEEDS REVIEW"},
+                    {"version": fallback_versions[1], "pass_count": 0, "fail_count": 0, "status": "NEEDS REVIEW"}
                 ],
                 "Belk": [
-                    {"version": "24.10", "pass_count": 40, "fail_count": 7, "status": "MEDIUM RISK"},
-                    {"version": "24.11", "pass_count": 42, "fail_count": 5, "status": "ON TRACK"}
+                    {"version": fallback_versions[0], "pass_count": 0, "fail_count": 0, "status": "NEEDS REVIEW"},
+                    {"version": fallback_versions[1], "pass_count": 0, "fail_count": 0, "status": "NEEDS REVIEW"}
                 ]
             } if metric == "Customer Specific Testing (UAT)" else
             [
-                {"version": "24.10", "value": 80 + i * 5, "status": "ON TRACK"},
-                {"version": "24.11", "value": 85 + i * 5, "status": "ON TRACK"}
+                {"version": fallback_versions[0], "value": 0, "status": "NEEDS REVIEW"},
+                {"version": fallback_versions[1], "value": 0, "status": "NEEDS REVIEW"}
             ]
             for i, metric in enumerate(EXPECTED_METRICS)
         }
@@ -918,7 +923,7 @@ def clean_json_output(raw_output: str) -> dict:
 
     try:
         data = json.loads(raw_output)
-        if validate_metrics(data):
+        if validate_metrics(data, is_fallback=False):
             return data
         logger.warning(f"Direct JSON invalid: {json.dumps(data, indent=2)[:200]}...")
     except json.JSONDecodeError as e:
@@ -928,7 +933,7 @@ def clean_json_output(raw_output: str) -> dict:
         cleaned = re.search(r'```json\s*([\s\S]*?)\s*```', raw_output, re.MULTILINE)
         if cleaned:
             data = json.loads(cleaned.group(1))
-            if validate_metrics(data):
+            if validate_metrics(data, is_fallback=False):
                 return data
             logger.warning(f"Code block JSON invalid: {json.dumps(data, indent=2)[:200]}...")
     except json.JSONDecodeError as e:
@@ -941,15 +946,14 @@ def clean_json_output(raw_output: str) -> dict:
             json_str = re.sub(r"'", '"', json_str)
             json_str = re.sub(r',\s*([\]}])', r'\1', json_str)
             data = json.loads(json_str)
-            if validate_metrics(data):
+            if validate_metrics(data, is_fallback=False):
                 return data
             logger.warning(f"JSON-like structure invalid: {json.dumps(data, indent=2)[:200]}...")
     except json.JSONDecodeError as e:
         logger.warning(f"JSON-like structure parsing failed: {str(e)}")
 
-    logger.error(f"Failed to parse JSON, using default structure with synthetic data")
+    logger.error(f"Failed to parse JSON, using default structure with zero values for versions: {fallback_versions}")
     return default_json
-
 def enhance_report_markdown(md_text):
     cleaned = re.sub(r'^```markdown\n|\n```$', '', md_text, flags=re.MULTILINE)
     
