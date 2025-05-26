@@ -143,13 +143,17 @@
     <script>
         // Handle Analyze button click
         document.getElementById('analyze-btn').addEventListener('click', async () => {
-            const folderPath = document.getElementById('folder-path').value.trim();
+            let folderPath = document.getElementById('folder-path').value.trim();
             if (!folderPath) {
                 alert('Please enter a folder path');
                 return;
             }
-            if (!/^[a-zA-Z0-9\/\\_-]+$/.test(folderPath)) {
-                alert('Invalid folder path format');
+
+            // Normalize path: replace multiple slashes with single backslash, trim spaces
+            folderPath = folderPath.replace(/\/+/g, '\\').replace(/\\+/g, '\\').trim();
+            // Validate path: drive letter, colon, slash, allowed characters
+            if (!/^[a-zA-Z]:[\\\/][a-zA-Z0-9\s._\\\/-]+$/.test(folderPath)) {
+                alert('Invalid folder path format. Use a valid Windows path (e.g., C:\\Users\\Name\\Folder).');
                 return;
             }
 
@@ -240,8 +244,8 @@
                 document.getElementById('cancel-edit-btn').addEventListener('click', () => {
                     document.getElementById('report-content').innerHTML = marked.parse(originalContent);
                     document.getElementById('edit-report-btn').style.display = 'inline';
-                    document.getElementById('save-report-btn').style.display = Vander
-                    document.getElementById('cancel-edit-report-btn').style.display = 'none';
+                    document.getElementById('save-report-btn').style.display = 'none';
+                    document.getElementById('cancel-edit-btn').style.display = 'none';
                 });
 
                 document.getElementById('save-report-btn').addEventListener('click', () => {
@@ -250,14 +254,14 @@
                     document.getElementById('report-content').innerHTML = marked.parse(originalContent);
                     document.getElementById('edit-report-btn').style.display = 'inline';
                     document.getElementById('save-report-btn').style.display = 'none';
-                    document.getElementById('cancel-edit-report-btn').style.display = 'none';
+                    document.getElementById('cancel-edit-btn').style.display = 'none';
                 });
 
                 // Download as PDF (placeholder)
-                document.getElementById('download-report-btn').onclick = () => {
+                document.getElementById('download-report-btn').addEventListener('click', () => {
                     alert('PDF download not implemented in this example');
-                    // Implement PDF generation with jsPDF if needed
-                };
+                });
+
             } catch (error) {
                 console.error('Error details:', error.message, error.stack);
                 alert(`Failed to analyze PDFs: ${error.message}`);
