@@ -189,7 +189,7 @@
             color: var(--accent-color);
         }
 
-        #report-content, #evaluation-content {
+        #report-content {
             background-color: var(--light-bg);
             padding: 20px;
             border-radius: 5px;
@@ -388,6 +388,21 @@
             }
         }
 
+        #e-content {
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid var(--border-color);
+            min-height: 100px;
+            overflow-y: auto;
+            background-color: var(--card-bg);
+        }
+
+        #e-content p {
+            margin-bottom: 1em;
+            line-height: 1.7;
+            font-size: 1rem;
+        }
+
         .hyperlinks div {
             margin-bottom: 12px;
             padding: 12px 15px;
@@ -471,7 +486,7 @@
 
         <div id="evaluation" class="section-card" style="display: none;">
             <h2>Evaluation</h2>
-            <div id="evaluation-content"></div>
+            <div id="e-content"></div>
         </div>
 
         <div id="hyperlinks" class="section-card" style="display: none;">
@@ -506,7 +521,7 @@
 
             document.getElementById('report-content').innerHTML = '';
             document.getElementById('visualizations-content').innerHTML = '';
-            document.getElementById('evaluation-content').innerHTML = '';
+            document.getElementById('e-content').innerHTML = '';
             document.getElementById('hyperlinks-content').innerHTML = '';
 
             try {
@@ -581,7 +596,10 @@
                     document.getElementById('visualizations-content').innerHTML = 'No visualizations available.';
                 }
 
-                document.getElementById('evaluation-content').innerHTML = response.data.evaluation || 'No evaluation provided.';
+                const evaluationContent = response.data.evaluation || 'No evaluation provided.';
+                document.getElementById('e-content').innerHTML = typeof evaluationContent === 'string' 
+                    ? `<p>${evaluationContent}</p>` 
+                    : 'Error: Evaluation content is not in a valid format.';
 
                 if (response.data.hyperlinks && response.data.hyperlinks.length > 0) {
                     const hyperlinksList = response.data.hyperlinks.map(link => `
