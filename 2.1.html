@@ -226,13 +226,17 @@
         #report-content h2 {
             font-size: 2rem;
             border-bottom: 2px solid var(--accent-color);
+            font-weight: 700;
+            letter-spacing: 0.5px;
         }
         #report-content h3 {
             font-size: 1.6rem;
             border-bottom: 1px solid var(--border-color);
+            font-weight: 600;
         }
         #report-content h4 {
             font-size: 1.4rem;
+            font-weight: 600;
         }
         #report-content h5 {
             font-size: 1.2rem;
@@ -550,7 +554,7 @@
                 <div class="spinner-border" role="status" aria-hidden="true">
                     <span class="visually-hidden">Loading...</span>
                 </div>
-                <p>Analyzing PDFs...</p>
+                <p>Analyzing PDFs... This may take a few moments.</p>
             </div>
         </div>
 
@@ -558,10 +562,10 @@
             <h2>Analysis Report</h2>
             <div id="report-content"></div>
             <div id="report-actions" class="report-actions">
-                <button id="edit-report-btn" class="btn btn-secondary" >Edit Report</button>
+                <button id="edit-report-btn" class="btn btn-secondary">Edit Report</button>
                 <button id="save-report-btn" class="btn btn-success" style="display: none;">Save Changes</button>
                 <button id="cancel-edit-btn" class="btn btn-danger" style="display: none;">Cancel</button>
-                <button id="downloadReportBtn" class="btn btn-info">Download as PDF</button>
+                <button id="download-report-btn" class="btn btn-info">Download as PDF</button>
             </div>
         </div>
 
@@ -623,7 +627,13 @@
                 document.getElementById('hyperlinks').style.display = 'block';
 
                 try {
-                    const reportContent = response.data.report || 'No report content provided.';
+                    let reportContent = response.data.report || 'No report content provided.';
+                    // Preprocess Markdown to standardize subheadings as h2
+                    reportContent = reportContent
+                        .replace(/^Software Metrics Report/, '## Software Metrics Report')
+                        .replace(/### Analyzed Releases:/, '## Analyzed Releases')
+                        .replace(/### Notable Metric Highlights:/, '## Notable Metric Highlights')
+                        .replace(/### Significant Deviations:/, '## Significant Deviations');
                     const reportContentHtml = typeof reportContent === 'string' 
                         ? marked.parse(reportContent)
                         : 'Error: Report content is not in a valid format.';
@@ -660,8 +670,11 @@
                     });
 
                     // Relocate tables under Metrics Summary
-                    const metricsSummaryHeading = document.getElementById('report-content').querySelector('h2#metrics-summary');
-                    if (metricsSummaryHeading && tables.length > 0) {
+                    const metricsSummaryHeading = document.querySelector('#report-content h2');
+                    const metricsSummaryText = Array.from(document.querySelectorAll('#report-content h2')).find(h2 => 
+                        h2.textContent.trim().toLowerCase().includes('metrics summary')
+                    );
+                    if (metricsSummaryText && tables.length > 0) {
                         const tableContainer = document.createElement('div');
                         tableContainer.className = 'metrics-summary-tables';
                         let currentTableGroup = document.createElement('div');
@@ -687,7 +700,7 @@
                         if (currentTableGroup.children.length > 0) {
                             tableContainer.appendChild(currentTableGroup);
                         }
-                        metricsSummaryHeading.parentNode.insertBefore(tableContainer, metricsSummaryHeading.nextSibling);
+                        metricsSummaryText.parentNode.insertBefore(tableContainer, metricsSummaryText.nextSibling);
                     }
                 } catch (e) {
                     console.error('Markdown parsing error:', e);
@@ -736,7 +749,7 @@
                     .replace(/</g, "&lt;")
                     .replace(/>/g, "&gt;")
                     .replace(/"/g, "&quot;")
-                    .replace(/'/g, "&#39;")
+                    .replace(/'/g, "&#039;")
                 : '';
         }
 
@@ -767,7 +780,7 @@
 
         editBtn.addEventListener('click', () => {
             originalContent = reportContentDiv.innerHTML;
-            reportContentDiv.contentEditable = true;
+            reportContentDiv.contentEditable = 'true';
             reportContentDiv.focus();
             editBtn.style.display = 'none';
             saveBtn.style.display = 'inline-block';
@@ -775,7 +788,7 @@
         });
 
         saveBtn.addEventListener('click', () => {
-            reportContentDiv.contentEditable = false;
+            reportContentDiv.contentEditable = 'false';
             editBtn.style.display = 'inline-block';
             saveBtn.style.display = 'none';
             cancelBtn.style.display = 'none';
@@ -783,14 +796,14 @@
 
         cancelBtn.addEventListener('click', () => {
             reportContentDiv.innerHTML = originalContent;
-            reportContentDiv.contentEditable = false;
+            reportContentDiv.contentEditable = 'false';
             editBtn.style.display = 'inline-block';
             saveBtn.style.display = 'none';
             cancelBtn.style.display = 'none';
         });
 
         document.getElementById('download-report-btn').addEventListener('click', () => {
-            alert('Download as PDF functionality would be implemented here with a library like pdfmake or jsPDF');
+            alert('Download as PDF functionality would be implemented here with a library like jsPDF or html2pdf.js');
         });
     </script>
 </body>
