@@ -7,13 +7,15 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Consolas:wght@400&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.4.0/dist/axios.min.js"></script>
     <style>
         :root {
-            --primary-color: #2c3e50; /* Darker blue for primary actions/branding */
-            --secondary-color: #34495e; /* Slightly lighter dark blue */
-            --accent-color: #3498db; /* A vibrant blue for highlights */
+            --primary-color: #2c3e50;
+            --secondary-color: #34495e;
+            --accent-color: #3498db;
             --text-color: #2c3e50;
-            --light-bg: #ecf0f1; /* Light gray background */
+            --light-bg: #ecf0f1;
             --card-bg: #ffffff;
             --border-color: #ced4da;
             --success-color: #27ae60;
@@ -21,7 +23,7 @@
             --danger-color: #e74c3c;
             --shadow-light: rgba(0, 0, 0, 0.08);
             --shadow-medium: rgba(0, 0, 0, 0.15);
-            --dark-bg: #212529; /* For code blocks */
+            --dark-bg: #212529;
         }
 
         body {
@@ -34,8 +36,8 @@
         }
 
         .container {
-            max-width: 1100px; /* Slightly narrower for better content focus */
-            margin: 40px auto; /* More vertical spacing */
+            max-width: 1100px;
+            margin: 40px auto;
             padding: 20px;
         }
 
@@ -69,7 +71,7 @@
             font-weight: 600;
             border-bottom: 2px solid var(--accent-color);
             padding-bottom: 10px;
-            display: inline-block; /* To make the border only as wide as the text */
+            display: inline-block;
         }
 
         .form-control {
@@ -82,7 +84,7 @@
 
         .form-control:focus {
             border-color: var(--accent-color);
-            box-shadow: 0 0 0 0.25rem rgba(52, 152, 219, 0.25); /* Bootstrap focus color */
+            box-shadow: 0 0 0 0.25rem rgba(52, 152, 219, 0.25);
         }
 
         .btn-primary {
@@ -96,10 +98,15 @@
         }
 
         .btn-primary:hover {
-            background-color: #2980b9; /* Slightly darker accent on hover */
+            background-color: #2980b9;
             border-color: #2980b9;
             transform: translateY(-2px);
             box-shadow: 0 4px 10px var(--shadow-medium);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
         }
 
         .btn-secondary {
@@ -143,7 +150,7 @@
         }
 
         .btn-info {
-            background-color: #17a2b8; /* Using Bootstrap's info color for consistency */
+            background-color: #17a2b8;
             border-color: #17a2b8;
             padding: 10px 20px;
             font-weight: 400;
@@ -156,7 +163,7 @@
 
         .input-group {
             display: flex;
-            gap: 15px; /* Spacing between input and button */
+            gap: 15px;
             margin-bottom: 30px;
             align-items: center;
         }
@@ -170,7 +177,7 @@
             padding: 30px;
             font-size: 1.1rem;
             color: var(--secondary-color);
-            display: flex; /* Use flexbox for centering spinner and text */
+            display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
@@ -179,16 +186,15 @@
             width: 3rem;
             height: 3rem;
             margin-bottom: 15px;
-            color: var(--accent-color); /* Spinner color */
+            color: var(--accent-color);
         }
-
 
         #report-content, #evaluation-content {
             background-color: var(--light-bg);
             padding: 20px;
             border-radius: 5px;
-            border: 1px dashed var(--border-color); /* Dashed border for content area */
-            min-height: 100px; /* Ensure some visible area */
+            border: 1px dashed var(--border-color);
+            min-height: 100px;
             overflow-y: auto;
         }
 
@@ -201,11 +207,10 @@
         .report-actions {
             margin-top: 20px;
             display: flex;
-            gap: 10px; /* Space between action buttons */
-            justify-content: flex-end; /* Align buttons to the right */
+            gap: 10px;
+            justify-content: flex-end;
         }
 
-        /* Markdown content styling */
         #report-content h1, #report-content h2, #report-content h3, #report-content h4, #report-content h5, #report-content h6 {
             color: var(--primary-color);
             margin-top: 1.5em;
@@ -216,53 +221,50 @@
         #report-content h1 { font-size: 2.2rem; border-bottom: 2px solid var(--accent-color); }
         #report-content h2 { font-size: 1.8rem; border-bottom: 1px solid var(--accent-color); }
         #report-content h3 { font-size: 1.5rem; }
-        #report-content h4 { font-size: 1.3rem; } /* Added specific styling for H4 */
-        #report-content h5 { font-size: 1.1rem; } /* Added specific styling for H5 */
-        #report-content h6 { font-size: 1rem; }   /* Added specific styling for H6 */
+        #report-content h4 { font-size: 1.3rem; }
+        #report-content h5 { font-size: 1.1rem; }
+        #report-content h6 { font-size: 1rem; }
 
         #report-content p {
             margin-bottom: 1em;
             line-height: 1.7;
-            font-size: 1rem; /* Ensure consistent paragraph font size */
+            font-size: 1rem;
         }
         #report-content ul, #report-content ol {
             margin-left: 20px;
             margin-bottom: 1em;
-            padding-left: 10px; /* Add slight padding for list markers */
+            padding-left: 10px;
         }
         #report-content li {
             margin-bottom: 0.5em;
         }
 
-        /* Blockquote styling */
         #report-content blockquote {
             border-left: 5px solid var(--accent-color);
             padding: 10px 20px;
             margin: 1.5em 0;
-            background-color: #f8f9fa; /* Light background for quotes */
-            color: var(--secondary-color); /* Slightly different text color */
+            background-color: #f8f9fa;
+            color: var(--secondary-color);
             font-style: italic;
             border-radius: 4px;
         }
 
-        /* Code block styling (for triple backticks ``` ) */
         #report-content pre {
-            background-color: var(--dark-bg); /* Dark background for code blocks */
-            color: #f8f9fa; /* Light text color */
+            background-color: var(--dark-bg);
+            color: #f8f9fa;
             padding: 15px;
             border-radius: 5px;
-            overflow-x: auto; /* Allow horizontal scrolling for long lines */
-            font-family: 'Consolas', 'Monaco', monospace; /* Monospaced font for code */
+            overflow-x: auto;
+            font-family: 'Consolas', 'Monaco', monospace;
             font-size: 0.9em;
             margin-bottom: 1.5em;
         }
         #report-content pre code {
-            color: inherit; /* Inherit color from pre */
+            color: inherit;
         }
 
-        /* Inline code styling (for single backticks ` ) */
         #report-content code {
-            background-color: #e9ecef; /* Light background for inline code */
+            background-color: #e9ecef;
             color: var(--primary-color);
             padding: 2px 4px;
             border-radius: 3px;
@@ -270,13 +272,12 @@
             font-size: 0.9em;
         }
 
-        /* Table specific styling for markdown */
         #report-content table {
             width: 100%;
             margin-bottom: 1.5rem;
             border-collapse: collapse;
             border-radius: 5px;
-            overflow: hidden; /* Ensures rounded corners apply to content */
+            overflow: hidden;
             box-shadow: 0 2px 5px var(--shadow-light);
         }
 
@@ -297,40 +298,36 @@
         }
 
         #report-content tbody tr:hover {
-            background-color: #e0e6e9; /* Slightly darker hover */
+            background-color: #e0e6e9;
         }
 
-        /* Layout for two tables in one row */
         .metrics-summary-tables {
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            gap: 20px; /* Increased gap for better separation */
-            margin-top: 20px; /* Add some space above the tables */
+            gap: 20px;
+            margin-top: 20px;
         }
         .metrics-summary-tables .table-wrapper {
-            flex: 1 1 calc(50% - 15px); /* Allows two tables, with gap, to fit */
-            box-sizing: border-box; /* Include padding/border in width calculation */
-            min-width: 300px; /* Prevent tables from becoming too narrow */
+            flex: 1 1 calc(50% - 15px);
+            box-sizing: border-box;
+            min-width: 300px;
         }
 
-
-        /* Visualizations grid - Two images per row, with size control */
         .visualizations-content {
             display: grid;
-            /* Aim for two columns. Each column will be at least 450px, and stretch evenly. */
             grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
             gap: 20px;
-            place-items: center; /* Centers content both horizontally and vertically in grid cells */
-            padding-bottom: 20px; /* Add some padding at the bottom of the grid */
+            place-items: center;
+            padding-bottom: 20px;
         }
 
         .visualizations-content img {
-            max-width: 500px; /* Stronger maximum width for the image itself */
-            width: 100%; /* Ensure it fills its grid cell up to max-width */
-            height: auto; /* Maintain aspect ratio */
-            max-height: 400px; /* Still useful for very tall images */
-            object-fit: contain; /* Ensures the entire image is visible, scales down if needed */
+            max-width: 500px;
+            width: 100%;
+            height: auto;
+            max-height: 400px;
+            object-fit: contain;
             border: 1px solid var(--border-color);
             border-radius: 5px;
             box-shadow: 0 2px 5px var(--shadow-light);
@@ -341,10 +338,9 @@
             transform: scale(1.02);
         }
 
-        /* Responsive adjustments */
-        @media (max-width: 992px) { /* Adjust breakpoint for larger screens where 2 images might fit */
+        @media (max-width: 992px) {
             .visualizations-content {
-                grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); /* Adjust min-width for medium screens */
+                grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
             }
         }
 
@@ -379,18 +375,46 @@
             }
 
             .metrics-summary-tables .table-wrapper {
-                flex: 1 1 100%; /* Stack tables on small screens */
+                flex: 1 1 100%;
             }
 
-            /* Responsive adjustment for visualizations on smaller screens */
             .visualizations-content {
-                grid-template-columns: 1fr; /* Show one image per row on smaller screens */
+                grid-template-columns: 1fr;
             }
 
             .visualizations-content img {
-                 max-height: 300px; /* Adjust max-height for smaller screens */
-                 max-width: 100%; /* Allow full width on smaller screens */
+                 max-height: 300px;
+                 max-width: 100%;
             }
+        }
+
+        #hyperlinks-content div {
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            background-color: #f0f4f7;
+            border-radius: 4px;
+            border: 1px solid #e0e6eb;
+        }
+
+        #hyperlinks-content a {
+            color: var(--accent-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        #hyperlinks-content a:hover {
+            text-decoration: underline;
+            color: #2980b9;
+        }
+
+        .error-message {
+            color: var(--danger-color);
+            padding: 10px;
+            margin-top: 10px;
+            border: 1px solid var(--danger-color);
+            border-radius: 4px;
+            background-color: #fdecea;
+            display: none;
         }
     </style>
 </head>
@@ -409,8 +433,9 @@
                 <input type="text" id="folder-path" class="form-control" placeholder="Enter Folder Path (e.g., C:\Users\Documents\MyPDFs)">
                 <button id="analyze-btn" class="btn btn-primary">Analyze Documents</button>
             </div>
+            <div id="error-message" class="error-message"></div>
             <div id="loading" class="loading" style="display: none;">
-                <div class="spinner-border" role="status">
+                <div class="spinner-border" role="status" aria-hidden="true">
                     <span class="visually-hidden">Loading...</span>
                 </div>
                 <p>Analyzing PDFs... This may take a few moments.</p>
@@ -444,12 +469,11 @@
         </div>
     </div>
 
-    <script src="[https://cdn.jsdelivr.net/npm/axios@1.4.0/dist/axios.min.js](https://cdn.jsdelivr.net/npm/axios@1.4.0/dist/axios.min.js)"></script>
     <script>
         document.getElementById('analyze-btn').addEventListener('click', async () => {
             let folderPath = document.getElementById('folder-path').value.trim();
             if (!folderPath) {
-                alert('Please enter a folder path');
+                showError('Please enter a folder path');
                 return;
             }
 
@@ -460,7 +484,7 @@
             document.getElementById('evaluation').style.display = 'none';
             document.getElementById('hyperlinks').style.display = 'none';
             document.getElementById('analyze-btn').disabled = true;
-
+            hideError();
 
             // Clear previous content
             document.getElementById('report-content').innerHTML = '';
@@ -469,7 +493,7 @@
             document.getElementById('hyperlinks-content').innerHTML = '';
 
             try {
-                const response = await axios.post('[http://127.0.0.1:8080/analyze](http://127.0.0.1:8080/analyze)', {
+                const response = await axios.post('http://127.0.0.1:8080/analyze', {
                     folder_path: folderPath
                 });
 
@@ -482,76 +506,119 @@
                 document.getElementById('hyperlinks').style.display = 'block';
 
                 // Render report
-                const reportContentHtml = marked.parse(response.data.report || 'No report content provided.');
-                document.getElementById('report-content').innerHTML = reportContentHtml;
+                try {
+                    const reportContentHtml = marked.parse(response.data.report || 'No report content provided.');
+                    document.getElementById('report-content').innerHTML = reportContentHtml;
+                } catch (e) {
+                    console.error('Markdown parsing error:', e);
+                    document.getElementById('report-content').innerHTML = response.data.report || 'No report content provided.';
+                }
 
                 // --- Special Handling for Tables in Report Content ---
                 const tables = document.querySelectorAll('#report-content table');
-                if (tables.length > 0) {
-                    const metricsSummaryHeading = document.getElementById('report-content').querySelector('h2#metrics-summary');
-                    if (metricsSummaryHeading) {
-                        const tableContainer = document.createElement('div');
-                        tableContainer.className = 'metrics-summary-tables';
+                const metricsSummaryHeading = document.getElementById('report-content').querySelector('h2#metrics-summary');
+                
+                if (metricsSummaryHeading && tables.length > 0) {
+                    const tableContainer = document.createElement('div');
+                    tableContainer.className = 'metrics-summary-tables';
 
-                        let currentTableGroup = document.createElement('div');
-                        currentTableGroup.className = 'd-flex flex-wrap gap-4';
+                    let currentTableGroup = document.createElement('div');
+                    currentTableGroup.className = 'table-group';
 
-                        const tablesToProcess = Array.from(tables);
-                        let tableCountInGroup = 0;
+                    const tablesToProcess = Array.from(tables);
+                    let tableCountInGroup = 0;
 
-                        tablesToProcess.forEach(table => {
-                            if (table.closest('#report-content')) {
-                                const tableWrapper = document.createElement('div');
-                                tableWrapper.className = 'table-wrapper';
-                                tableWrapper.appendChild(table.cloneNode(true));
+                    tablesToProcess.forEach(table => {
+                        if (table.closest('#report-content')) {
+                            const tableWrapper = document.createElement('div');
+                            tableWrapper.className = 'table-wrapper';
+                            tableWrapper.appendChild(table.cloneNode(true));
 
-                                currentTableGroup.appendChild(tableWrapper);
-                                tableCountInGroup++;
+                            currentTableGroup.appendChild(tableWrapper);
+                            tableCountInGroup++;
 
-                                if (tableCountInGroup === 2) {
-                                    tableContainer.appendChild(currentTableGroup);
-                                    currentTableGroup = document.createElement('div');
-                                    currentTableGroup.className = 'd-flex flex-wrap gap-4';
-                                    tableCountInGroup = 0;
-                                }
-                                table.remove();
+                            if (tableCountInGroup === 2) {
+                                tableContainer.appendChild(currentTableGroup);
+                                currentTableGroup = document.createElement('div');
+                                currentTableGroup.className = 'table-group';
+                                tableCountInGroup = 0;
                             }
-                        });
-
-                        if (currentTableGroup.children.length > 0) {
-                            tableContainer.appendChild(currentTableGroup);
+                            table.remove();
                         }
+                    });
 
-                        metricsSummaryHeading.parentNode.insertBefore(tableContainer, metricsSummaryHeading.nextSibling);
+                    if (currentTableGroup.children.length > 0) {
+                        tableContainer.appendChild(currentTableGroup);
                     }
+
+                    metricsSummaryHeading.parentNode.insertBefore(tableContainer, metricsSummaryHeading.nextSibling);
                 }
                 // --- End Special Handling for Tables ---
 
-
                 // Render visualizations
-                const vizContent = response.data.visualizations.map((base64, index) =>
-                    `<img src="data:image/png;base64,${base64}" class="visualization img-fluid" alt="Visualization ${index + 1}">`
-                ).join('');
-                document.getElementById('visualizations-content').innerHTML = vizContent || 'No visualizations available.';
+                if (response.data.visualizations && response.data.visualizations.length > 0) {
+                    const vizContent = response.data.visualizations.map((base64, index) =>
+                        `<img src="data:image/png;base64,${base64}" class="visualization img-fluid" alt="Data visualization ${index + 1}" loading="lazy">`
+                    ).join('');
+                    document.getElementById('visualizations-content').innerHTML = vizContent;
+                } else {
+                    document.getElementById('visualizations-content').innerHTML = 'No visualizations available.';
+                }
 
                 // Render evaluation
                 document.getElementById('evaluation-content').innerHTML = response.data.evaluation || 'No evaluation provided.';
 
                 // Render hyperlinks
-                const hyperlinksList = response.data.hyperlinks.map(link => `
-                    <div>
-                        <a href="${link.url}" target="_blank" rel="noopener noreferrer">${link.text}</a>
-                    </div>
-                `).join('');
-                document.getElementById('hyperlinks-content').innerHTML = hyperlinksList || 'No hyperlinks found.';
+                if (response.data.hyperlinks && response.data.hyperlinks.length > 0) {
+                    const hyperlinksList = response.data.hyperlinks.map(link => `
+                        <div>
+                            <a href="${sanitizeUrl(link.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(link.text || link.url)}</a>
+                        </div>
+                    `).join('');
+                    document.getElementById('hyperlinks-content').innerHTML = hyperlinksList;
+                } else {
+                    document.getElementById('hyperlinks-content').innerHTML = 'No hyperlinks found.';
+                }
 
             } catch (error) {
                 console.error('Error:', error);
-                alert('Error: ' + (error.response?.data?.detail || error.message || 'An unknown error occurred.'));
+                const errorMsg = error.response?.data?.detail || error.message || 'An unknown error occurred.';
+                showError('Error: ' + errorMsg);
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('analyze-btn').disabled = false;
             }
         });
+
+        // Basic HTML escaping for hyperlink text
+        function escapeHtml(unsafe) {
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // Basic URL sanitization
+        function sanitizeUrl(url) {
+            try {
+                const u = new URL(url);
+                return u.href;
+            } catch (e) {
+                return '#';
+            }
+        }
+
+        // Error handling functions
+        function showError(message) {
+            const errorEl = document.getElementById('error-message');
+            errorEl.textContent = message;
+            errorEl.style.display = 'block';
+        }
+
+        function hideError() {
+            document.getElementById('error-message').style.display = 'none';
+        }
 
         // Edit report functionality
         const reportContentDiv = document.getElementById('report-content');
@@ -586,7 +653,7 @@
 
         // Placeholder for Download as PDF functionality
         document.getElementById('download-report-btn').addEventListener('click', () => {
-            alert('Download as PDF functionality not yet implemented.');
+            alert('Download as PDF functionality would be implemented here with a library like jsPDF or html2pdf.js');
         });
     </script>
 </body>
