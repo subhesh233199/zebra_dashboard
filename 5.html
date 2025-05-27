@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional RRR Analysis Tool</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Consolas:wght@400&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked@4.0.0/lib/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.4.0/dist/axios.min.js"></script>
+    <style>
+        /* [Previous CSS content remains exactly the same] */
+        /* No changes to existing styles */
+        
+        /* Add these new styles for markdown enhancements */
+        #report-content .status-high {
+            background-color: rgba(231, 76, 60, 0.1);
+            color: var(--danger-color);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        #report-content .status-medium {
+            background-color: rgba(243, 156, 18, 0.1);
+            color: var(--warning-color);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        #report-content .status-low {
+            background-color: rgba(39, 174, 96, 0.1);
+            color: var(--success-color);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        #report-content .trend-up {
+            color: var(--danger-color);
+            font-weight: 600;
+        }
+        #report-content .trend-down {
+            color: var(--success-color);
+            font-weight: 600;
+        }
+        #report-content .trend-neutral {
+            color: var(--accent-color);
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <!-- [Previous HTML content remains exactly the same until the script section] -->
+    <!-- No changes to existing HTML structure -->
+
+    <script>
+        // [Previous JavaScript content remains exactly the same until the analyze-btn click handler]
+        
+        // Configure marked with options for better rendering
+        marked.setOptions({
+            breaks: true,
+            gfm: true,
+            tables: true,
+            sanitize: false
+        });
+
+        function processMarkdownContent(content) {
+            if (typeof content !== 'string') {
+                console.error('processMarkdownContent: Input is not a string:', content);
+                return '<p>Error: Invalid report content</p>';
+            }
+            
+            // First parse the markdown to HTML
+            let html = marked.parse(content);
+            
+            // Enhance risk indicators and trends with proper styling
+            html = html.replace(/<strong>HIGH RISK<\/strong>/gi, '<span class="status-high">HIGH RISK</span>');
+            html = html.replace(/<strong>MEDIUM RISK<\/strong>/gi, '<span class="status-medium">MEDIUM RISK</span>');
+            html = html.replace(/<strong>LOW RISK<\/strong>/gi, '<span class="status-low">LOW RISK</span>');
+            html = html.replace(/<strong>ON TRACK<\/strong>/gi, '<span class="status-low">ON TRACK</span>');
+            html = html.replace(/<strong>(↑ \([^<]+\))<\/strong>/gi, '<span class="trend-up">$1</span>');
+            html = html.replace(/<strong>(↓ \([^<]+\))<\/strong>/gi, '<span class="trend-down">$1</span>');
+            html = html.replace(/<strong>→<\/strong>/gi, '<span class="trend-neutral">→</span>');
+            
+            // Ensure tables are responsive
+            html = html.replace(/<table>/g, '<div class="table-responsive"><table class="table table-bordered">');
+            html = html.replace(/<\/table>/g, '</table></div>');
+            
+            return html;
+        }
+
+        document.getElementById('analyze-btn').addEventListener('click', async () => {
+            let folderPath = document.getElementById('folder-path').value.trim();
+            if (!folderPath) {
+                showError('Please enter a folder path');
+                return;
+            }
+
+            document.getElementById('loading').style.display = 'flex';
+            document.getElementById('analysis-report').style.display = 'none';
+            document.getElementById('visualizations').style.display = 'none';
+            document.getElementById('evaluation').style.display = 'none';
+            document.getElementById('hyperlinks').style.display = 'none';
+            document.getElementById('analyze-btn').disabled = true;
+            hideError();
+
+            document.getElementById('report-content').innerHTML = '';
+            document.getElementById('visualizations-content').innerHTML = '';
+            document.getElementById('e-content').innerHTML = '';
+            document.getElementById('hyperlinks-content').innerHTML = '';
+
+            try {
+                const response = await axios.post('http://127.0.0.1:8080/analyze', {
+                    folder_path: folderPath
+                });
+
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('analyze-btn').disabled = false;
+                document.getElementById('analysis-report').style.display = 'block';
+                document.getElementById('visualizations').style.display = 'block';
+                document.getElementById('evaluation').style.display = 'block';
+                document.getElementById('hyperlinks').style.display = 'block';
+
+                // Process the report content with our enhanced markdown processor
+                let reportContent = response.data.report || 'No report content provided.';
+                const reportContentHtml = processMarkdownContent(reportContent);
+                document.getElementById('report-content').innerHTML = reportContentHtml;
+
+                // [Rest of the existing code for visualizations, evaluation, and hyperlinks remains exactly the same]
+                if (response.data.visualizations && response.data.visualizations.length > 0) {
+                    const vizContent = response.data.visualizations.map((base64, index) =>
+                        `<img src="data:image/png;base64,${base64}" alt="Data visualization ${index + 1}" loading="lazy">`
+                    ).join('');
+                    document.getElementById('visualizations-content').innerHTML = vizContent;
+                } else {
+                    document.getElementById('visualizations-content').innerHTML = 'No visualizations available.';
+                }
+
+                const evaluation = response.data.evaluation || {};
+                const evaluationContent = `
+                    <div class="evaluation-card">
+                        <h4>Analysis Quality Score</h4>
+                        <div class="score-display">${evaluation.score || 'N/A'}/100</div>
+                        <p>${evaluation.text || 'No evaluation text provided.'}</p>
+                    </div>
+                `;
+                document.getElementById('e-content').innerHTML = evaluationContent;
+
+                if (response.data.hyperlinks && response.data.hyperlinks.length > 0) {
+                    const hyperlinksList = response.data.hyperlinks.map(link => `
+                        <div>
+                            <a href="${sanitizeUrl(link.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(link.text || link.url)}</a>
+                            ${link.context ? `<p class="hyperlink-context">${escapeHtml(link.context)}</p>` : ''}
+                            <div class="hyperlink-source">
+                                Source: ${escapeHtml(link.source_file || 'Unknown')} (Page ${link.page || 'N/A'})
+                            </div>
+                        </div>
+                    `).join('');
+                    document.getElementById('hyperlinks-content').innerHTML = hyperlinksList;
+                } else {
+                    document.getElementById('hyperlinks-content').innerHTML = 'No hyperlinks found.';
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                const errorMsg = error.response?.data?.detail || error.message || 'An unknown error occurred.';
+                showError('Error: ' + errorMsg);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('analyze-btn').disabled = false;
+            }
+        });
+
+        // [Rest of the existing helper functions remain exactly the same]
+        function escapeHtml(unsafe) {
+            return unsafe
+                ? unsafe
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;")
+                : '';
+        }
+
+        function sanitizeUrl(url) {
+            try {
+                const u = new URL(url);
+                return u.href;
+            } catch (e) {
+                return '#';
+            }
+        }
+
+        function showError(message) {
+            const errorEl = document.getElementById('error-message');
+            errorEl.textContent = message;
+            errorEl.style.display = 'block';
+        }
+
+        function hideError() {
+            document.getElementById('error-message').style.display = 'none';
+        }
+
+        const reportContentDiv = document.getElementById('report-content');
+        const editBtn = document.getElementById('edit-report-btn');
+        const saveBtn = document.getElementById('save-report-btn');
+        const cancelBtn = document.getElementById('cancel-edit-btn');
+        let originalContent = '';
+
+        editBtn.addEventListener('click', () => {
+            originalContent = reportContentDiv.innerHTML;
+            reportContentDiv.contentEditable = 'true';
+            reportContentDiv.focus();
+            editBtn.style.display = 'none';
+            saveBtn.style.display = 'inline-block';
+            cancelBtn.style.display = 'inline-block';
+        });
+
+        saveBtn.addEventListener('click', () => {
+            reportContentDiv.contentEditable = 'false';
+            editBtn.style.display = 'inline-block';
+            saveBtn.style.display = 'none';
+            cancelBtn.style.display = 'none';
+        });
+
+        cancelBtn.addEventListener('click', () => {
+            reportContentDiv.innerHTML = originalContent;
+            reportContentDiv.contentEditable = 'false';
+            editBtn.style.display = 'inline-block';
+            saveBtn.style.display = 'none';
+            cancelBtn.style.display = 'none';
+        });
+
+        document.getElementById('download-report-btn').addEventListener('click', () => {
+            alert('Download as PDF functionality would be implemented here with a library like jsPDF or html2pdf.js');
+        });
+    </script>
+</body>
+</html>
