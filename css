@@ -1,34 +1,52 @@
-/* Add these new styles for markdown enhancements */
-#report-content .status-high {
-    background-color: rgba(231, 76, 60, 0.1);
-    color: var(--danger-color);
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-weight: 600;
-}
-#report-content .status-medium {
-    background-color: rgba(243, 156, 18, 0.1);
-    color: var(--warning-color);
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-weight: 600;
-}
-#report-content .status-low {
+/* Enhanced status indicators */
+.status-on-track {
     background-color: rgba(39, 174, 96, 0.1);
     color: var(--success-color);
     padding: 2px 6px;
     border-radius: 4px;
     font-weight: 600;
 }
-#report-content .trend-up {
+.status-medium-risk {
+    background-color: rgba(243, 156, 18, 0.1);
+    color: var(--warning-color);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+}
+.status-risk {
+    background-color: rgba(231, 76, 60, 0.1);
+    color: var(--danger-color);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+/* Trend indicators */
+.trend-up {
     color: var(--danger-color);
     font-weight: 600;
 }
-#report-content .trend-down {
+.trend-down {
     color: var(--success-color);
     font-weight: 600;
 }
-#report-content .trend-neutral {
+.trend-stable {
     color: var(--accent-color);
     font-weight: 600;
+}
+
+/* Section dividers */
+.section-divider {
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--border-color), transparent);
+    margin: 2rem 0;
+}
+
+/* Table enhancements */
+.table-responsive {
+    overflow-x: auto;
+    margin-bottom: 1.5rem;
+}
+.table-bordered {
+    border: 1px solid var(--border-color);
 }
