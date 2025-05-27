@@ -1,0 +1,17 @@
+// Replace this:
+let reportContent = response.data.report || 'No report content provided.';
+// Preprocess Markdown to standardize subheadings as h2
+reportContent = reportContent
+    .replace(/^Software Metrics Report/, '## Software Metrics Report')
+    .replace(/### Analyzed Releases:/, '## Analyzed Releases')
+    .replace(/### Notable Metric Highlights:/, '## Notable Metric Highlights')
+    .replace(/### Significant Deviations:/, '## Significant Deviations');
+const reportContentHtml = typeof reportContent === 'string' 
+    ? marked.parse(reportContent)
+    : 'Error: Report content is not in a valid format.';
+document.getElementById('report-content').innerHTML = reportContentHtml;
+
+// With this:
+let reportContent = response.data.report || 'No report content provided.';
+const reportContentHtml = processMarkdownContent(reportContent);
+document.getElementById('report-content').innerHTML = reportContentHtml;
