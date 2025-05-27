@@ -1,0 +1,9 @@
+const evaluation = response.data.evaluation || {};
+const evaluationContent = `
+    <div class="evaluation-card">
+        <h4>Analysis Quality Score</h4>
+        <div class="score-display">${evaluation.score || 'N/A'}/100</div>
+        <p>${evaluation.text || 'No evaluation text provided.'}</p>
+    </div>
+`;
+document.getElementById('e-content').innerHTML = evaluationContent;
